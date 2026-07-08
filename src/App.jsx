@@ -49,7 +49,7 @@ export default function MonthlyLedger() {
   const [loaded, setLoaded] = useState(false);
   const [form, setForm] = useState({ category: "food", amount: "", excludedAmount: "", note: "", date: todayISO(), cardId: "", fundId: "", isRefund: false });
   const [selectedMonth, setSelectedMonth] = useState(todayISO().slice(0, 7));
-  const [activeTab, setActiveTab] = useState("ledger"); // "ledger" | "assets"
+  const [activeTab, setActiveTab] = useState("quickadd"); // default landing tab
   const [stampFlash, setStampFlash] = useState(false);
   const [error, setError] = useState("");
 
