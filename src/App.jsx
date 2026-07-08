@@ -47,7 +47,7 @@ function todayISO() {
 export default function MonthlyLedger() {
   const [entries, setEntries] = useState([]);
   const [loaded, setLoaded] = useState(false);
-  const [form, setForm] = useState({ category: "food", amount: "", excludedAmount: "", note: "", date: todayISO(), cardId: "", fundId: "", isRefund: false });
+  const [form, setForm] = useState({ category: "food", amount: "", excludedAmount: "", note: "", date: todayISO(), cardId: "", accountId: "", fundId: "", isRefund: false });
   const [selectedMonth, setSelectedMonth] = useState(todayISO().slice(0, 7));
   const [activeTab, setActiveTab] = useState("quickadd"); // default landing tab
   const [stampFlash, setStampFlash] = useState(false);
@@ -366,19 +366,31 @@ export default function MonthlyLedger() {
     return t;
   }, [monthEntries]);
 
-  // income assumption: paid on 15th and 30th of each month, varies month to month
-  const [payAmountByMonth, setPayAmountByMonth] = useState({});
+  // income — freely add any number of income entries per month (no fixed payday assumption)
+  const [incomeEntries, setIncomeEntries] = useState([]);
+  const [incomeForm, setIncomeForm] = useState({ amount: "", date: todayISO(), note: "" });
+  const [incomeError, setIncomeError] = useState("");
+
   useEffect(() => {
     (async () => {
       try {
         const res = await window.storage.get("ledger:payAmount", false);
         if (res && res.value) {
           const v = JSON.parse(res.value);
-          if (v && typeof v === "object" && !Array.isArray(v)) {
-            setPayAmountByMonth(v);
-          } else if (typeof v === "number") {
-            // migrate legacy single-value shape: apply it to the current real-world month only
-            setPayAmountByMonth({ [todayISO().slice(0, 7)]: v });
+          if (Array.isArray(v)) {
+            setIncomeEntries(v);
+          } else if (v && typeof v === "object") {
+            // migrate legacy per-month {month: amount} shape (assumed paid on 15th & 30th)
+            const migrated = [];
+            Object.entries(v).forEach(([month, amt]) => {
+              if (amt) {
+                migrated.push({ id: `${month}-15-migrated`, amount: amt, date: `${month}-15`, note: "" });
+                migrated.push({ id: `${month}-30-migrated`, amount: amt, date: `${month}-30`, note: "" });
+              }
+            });
+            setIncomeEntries(migrated);
+          } else if (typeof v === "number" && v) {
+            setIncomeEntries([{ id: "legacy", amount: v, date: todayISO(), note: "" }]);
           }
         }
       } catch (e) {}
@@ -386,16 +398,36 @@ export default function MonthlyLedger() {
   }, []);
   useEffect(() => {
     (async () => {
-      try { await window.storage.set("ledger:payAmount", JSON.stringify(payAmountByMonth), false); } catch (e) {}
+      try { await window.storage.set("ledger:payAmount", JSON.stringify(incomeEntries), false); } catch (e) {}
     })();
-  }, [payAmountByMonth]);
+  }, [incomeEntries]);
 
-  const payAmount = payAmountByMonth[selectedMonth] ?? null;
-  function updatePayAmount(value) {
-    setPayAmountByMonth(prev => ({ ...prev, [selectedMonth]: value }));
+  const monthIncomeEntries = useMemo(
+    () => incomeEntries.filter(i => monthKey(i.date) === selectedMonth).sort((a, b) => b.date.localeCompare(a.date)),
+    [incomeEntries, selectedMonth]
+  );
+
+  const monthlyIncome = useMemo(
+    () => monthIncomeEntries.reduce((a, i) => a + i.amount, 0),
+    [monthIncomeEntries]
+  );
+
+  function addIncome() {
+    const amt = parseFloat(incomeForm.amount);
+    if (!amt || amt <= 0) { setIncomeError("请输入有效金额"); return; }
+    setIncomeError("");
+    setIncomeEntries(prev => [...prev, {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      amount: amt,
+      date: incomeForm.date,
+      note: incomeForm.note.trim(),
+    }]);
+    setIncomeForm({ ...incomeForm, amount: "", note: "" });
   }
 
-  const monthlyIncome = payAmount ? payAmount * 2 : 0;
+  function removeIncome(id) {
+    setIncomeEntries(prev => prev.filter(i => i.id !== id));
+  }
 
   // rent — varies month to month, so it's stored per-month; editing one month never touches another
   const [rentByMonth, setRentByMonth] = useState({});
@@ -483,6 +515,53 @@ export default function MonthlyLedger() {
 
   function removeCard(id) {
     setCards(prev => prev.filter(c => c.id !== id));
+  }
+
+  // cash / savings accounts — for spending that doesn't go through a credit card.
+  // unlike card charges, money paid from these accounts leaves immediately (real cashflow impact)
+  const [accounts, setAccounts] = useState([]);
+  const [accountForm, setAccountForm] = useState({ name: "" });
+  const [accountError, setAccountError] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await window.storage.get("ledger:accounts", false);
+        if (res && res.value) {
+          setAccounts(JSON.parse(res.value));
+        } else {
+          setAccounts([
+            { id: "default-cash", name: "现金" },
+            { id: "default-savings", name: "储蓄账户" },
+          ]);
+        }
+      } catch (e) {
+        // key not found yet — seed the two default accounts the user asked for
+        setAccounts([
+          { id: "default-cash", name: "现金" },
+          { id: "default-savings", name: "储蓄账户" },
+        ]);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try { await window.storage.set("ledger:accounts", JSON.stringify(accounts), false); } catch (e) {}
+    })();
+  }, [accounts]);
+
+  function addAccount() {
+    const name = accountForm.name.trim();
+    if (!name) { setAccountError("请输入账户名称"); return; }
+    if (accounts.some(a => a.name === name)) { setAccountError("已经有同名账户了"); return; }
+    setAccountError("");
+    setAccounts(prev => [...prev, { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name }]);
+    setAccountForm({ name: "" });
+  }
+
+  function removeAccount(id) {
+    setAccounts(prev => prev.filter(a => a.id !== id));
   }
 
   // a card's repayment amount (statement balance) varies month to month;
@@ -600,16 +679,22 @@ export default function MonthlyLedger() {
     const lastDay = daysInMonth(selectedMonth);
     const events = [];
 
-    // paydays
-    [15, 30].forEach(d => {
-      const day = Math.min(d, lastDay);
-      if (payAmount) {
-        events.push({ date: `${selectedMonth}-${String(day).padStart(2, "0")}`, label: "发薪", amount: payAmount, type: "income" });
-      }
+    // income — one event per income entry, on its actual date
+    monthIncomeEntries.forEach(inc => {
+      events.push({ date: inc.date, label: inc.note ? `收入 · ${inc.note}` : "收入", amount: inc.amount, type: "income" });
     });
 
-    // note: individual expenses are not added here since they're paid by credit card;
-    // their cash-flow impact happens on the card's repayment date instead.
+    // expenses paid by credit card are excluded here — their cash-flow impact happens on the
+    // card's repayment date instead. But cash/savings-account spending is real money leaving right
+    // now, so those show up immediately on their own date.
+    monthEntries.forEach(e => {
+      if (!e.recurring && e.accountId) {
+        const net = e.amount - (e.excludedAmount || 0);
+        const account = accounts.find(a => a.id === e.accountId);
+        const label = `${CAT_MAP[e.category]?.label || "支出"}${account ? " · " + account.name : ""}`;
+        events.push({ date: e.date, label, amount: e.isRefund ? net : -net, type: "account-expense" });
+      }
+    });
 
     // rent (fixed recurring, not per-transaction)
     if (rent.amount && rent.day) {
@@ -643,7 +728,7 @@ export default function MonthlyLedger() {
       return { ...ev, running };
     });
     return rows;
-  }, [selectedMonth, payAmountByMonth, cards, startBalanceByMonth, rentByMonth, monthTransfers]);
+  }, [selectedMonth, monthIncomeEntries, cards, startBalanceByMonth, rentByMonth, monthTransfers, monthEntries, accounts]);
 
   const ccWarnings = useMemo(() => {
     return cashflowTimeline.filter(r => (r.type === "cc" || r.type === "saving" || r.type === "rent") && r.running < 0);
@@ -700,6 +785,7 @@ export default function MonthlyLedger() {
       note: form.note.trim(),
       date: form.date,
       cardId: form.cardId || "",
+      accountId: form.cardId ? "" : (form.accountId || ""),
       fundId: !form.isRefund && form.category === "fund" ? form.fundId : "",
       isRefund: form.isRefund,
     };
@@ -924,6 +1010,7 @@ export default function MonthlyLedger() {
       计入支出: e.isRefund ? -e.amount : (e.amount - (e.excludedAmount || 0)),
       类型: e.isRefund ? "退款" : (e.recurring ? "订阅" : "支出"),
       信用卡: (e.cardId && cards.find(c => c.id === e.cardId)?.name) || "",
+      账户: (e.accountId && accounts.find(a => a.id === e.accountId)?.name) || "",
       基金: (e.fundId && savingsGoals.find(g => g.id === e.fundId)?.name) || "",
       备注: e.note || "",
     }));
@@ -1095,33 +1182,78 @@ export default function MonthlyLedger() {
         {activeTab === "ledger" && (
         <>
 
-        {/* Income setup */}
-        <div style={{
-          background: "#FFFFFF", border: "1px solid #B8CBA0", borderTop: "none",
-          padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
-        }}>
-          <div>
-            <div style={{ fontSize: 13, color: "#223018", display: "flex", alignItems: "center", gap: 6 }}>
-              <Wallet size={14} />
-              每次发薪(15/30日)
+        {/* Income — freely add any number of income entries */}
+        <div style={{ background: "#FFFFFF", border: "1px solid #B8CBA0", borderTop: "none", padding: "16px 18px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
+            <div style={{ fontSize: 12.5, color: "#223018", letterSpacing: 1, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
+              <Wallet size={14} /> 本月收入
             </div>
-            <div style={{ fontSize: 10.5, color: "#6B7D5E", marginTop: 2 }}>
-              {selectedMonth}，每月单独填写
+            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, color: "#4C8C3C" }}>
+              ${formatMoney(monthlyIncome)}
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13 }}>$</span>
+
+          {monthIncomeEntries.length > 0 && (
+            <div style={{ marginBottom: 12 }}>
+              {monthIncomeEntries.map(inc => (
+                <div key={inc.id} style={{
+                  display: "flex", alignItems: "center", gap: 8, padding: "8px 10px",
+                  border: "1px solid #E3EDD4", borderRadius: 8, marginBottom: 6, background: "#E9F0DE",
+                }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#4C8C3C", flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {inc.note || "收入"}
+                    </div>
+                    <div style={{ fontSize: 11, color: "#6B7D5E", fontFamily: "'JetBrains Mono', monospace" }}>{inc.date}</div>
+                  </div>
+                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, color: "#4C8C3C", flexShrink: 0 }}>
+                    +${formatMoney(inc.amount)}
+                  </div>
+                  <button onClick={() => removeIncome(inc.id)} style={{ border: "none", background: "none", color: "#B8CBA0", cursor: "pointer", padding: 2, flexShrink: 0 }}>
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", flex: "0 0 100px", border: "1px solid #B8CBA0", borderRadius: 8, padding: "8px 10px" }}>
+              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, marginRight: 4, color: "#223018" }}>$</span>
+              <input
+                type="number"
+                placeholder="金额"
+                value={incomeForm.amount}
+                onChange={e => setIncomeForm({ ...incomeForm, amount: e.target.value })}
+                style={{ border: "none", outline: "none", width: "100%", fontFamily: "'JetBrains Mono', monospace", fontSize: 14, background: "transparent" }}
+              />
+            </div>
             <input
-              type="number"
-              placeholder="金额"
-              value={payAmount ?? ""}
-              onChange={e => updatePayAmount(e.target.value === "" ? null : parseFloat(e.target.value))}
-              style={{
-                width: 90, border: "none", borderBottom: "1px solid #B8CBA0", background: "transparent",
-                fontFamily: "'JetBrains Mono', monospace", fontSize: 14, textAlign: "right", outline: "none", padding: "2px 0",
-              }}
+              type="date"
+              value={incomeForm.date}
+              onChange={e => setIncomeForm({ ...incomeForm, date: e.target.value })}
+              style={{ border: "1px solid #B8CBA0", borderRadius: 8, padding: "8px 10px", fontSize: 13, flex: "0 0 130px", fontFamily: "'JetBrains Mono', monospace", color: "#223018" }}
             />
+            <input
+              type="text"
+              placeholder="备注，如 工资/奖金/兼职（可选）"
+              value={incomeForm.note}
+              onChange={e => setIncomeForm({ ...incomeForm, note: e.target.value })}
+              style={{ border: "1px solid #B8CBA0", borderRadius: 8, padding: "8px 10px", fontSize: 13, flex: 1, outline: "none" }}
+            />
+            <button
+              onClick={addIncome}
+              style={{
+                background: "#4C8C3C", color: "#FFFFFF", border: "none", borderRadius: 8,
+                padding: "0 14px", display: "flex", alignItems: "center", gap: 5, cursor: "pointer", fontSize: 13, fontWeight: 700,
+                boxShadow: "0 2px 6px rgba(76,140,60,0.4)",
+              }}
+            >
+              <Plus size={14} /> 添加
+            </button>
           </div>
+          {incomeError && <div style={{ color: "#A8442E", fontSize: 12 }}>{incomeError}</div>}
         </div>
 
         {/* Rent setup — varies month to month; editing only changes the selected month */}
@@ -1339,6 +1471,54 @@ export default function MonthlyLedger() {
             </div>
             {categoryError && <div style={{ color: "#A8442E", fontSize: 11, marginTop: 6 }}>{categoryError}</div>}
           </div>
+        </div>
+
+        {/* Cash / savings accounts */}
+        <div style={{ background: "#FFFFFF", border: "1px solid #B8CBA0", borderTop: "none", padding: "16px 18px" }}>
+          <div style={{ fontSize: 12.5, color: "#223018", letterSpacing: 1, marginBottom: 6, fontWeight: 700 }}>
+            现金 / 储蓄账户
+          </div>
+          <div style={{ fontSize: 10.5, color: "#6B7D5E", marginBottom: 10 }}>
+            这些账户的支出会立即计入现金流，不像信用卡要等还款日
+          </div>
+
+          {accounts.length > 0 && (
+            <div style={{ marginBottom: 12 }}>
+              {accounts.map(a => (
+                <div key={a.id} style={{
+                  display: "flex", alignItems: "center", gap: 8, padding: "8px 10px",
+                  border: "1px solid #E3EDD4", borderRadius: 8, marginBottom: 6, background: "#E9F0DE",
+                }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#4C8C3C", flexShrink: 0 }} />
+                  <div style={{ flex: 1, fontSize: 13, fontWeight: 500 }}>{a.name}</div>
+                  <button onClick={() => removeAccount(a.id)} style={{ border: "none", background: "none", color: "#B8CBA0", cursor: "pointer", padding: 2, flexShrink: 0 }}>
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div style={{ display: "flex", gap: 6 }}>
+            <input
+              type="text"
+              placeholder="账户名称，如 现金 / 招行储蓄卡"
+              value={accountForm.name}
+              onChange={e => setAccountForm({ name: e.target.value })}
+              style={{ border: "1px solid #B8CBA0", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: 1, outline: "none" }}
+            />
+            <button
+              onClick={addAccount}
+              style={{
+                background: "#4C8C3C", color: "#FFFFFF", border: "none", borderRadius: 8,
+                padding: "0 12px", display: "flex", alignItems: "center", cursor: "pointer", flexShrink: 0,
+                boxShadow: "0 2px 6px rgba(76,140,60,0.4)",
+              }}
+            >
+              <Plus size={15} />
+            </button>
+          </div>
+          {accountError && <div style={{ color: "#A8442E", fontSize: 12, marginTop: 6 }}>{accountError}</div>}
         </div>
 
         {/* Credit card cash flow planning */}
@@ -1979,7 +2159,7 @@ export default function MonthlyLedger() {
                 {cards.map(c => (
                   <button
                     key={c.id}
-                    onClick={() => setForm({ ...form, cardId: form.cardId === c.id ? "" : c.id })}
+                    onClick={() => setForm({ ...form, cardId: form.cardId === c.id ? "" : c.id, accountId: "" })}
                     style={{
                       padding: "6px 12px", borderRadius: 20, fontSize: 12.5, cursor: "pointer",
                       border: `1.5px solid ${form.cardId === c.id ? "#C68A3E" : "#B8CBA0"}`,
@@ -1990,6 +2170,32 @@ export default function MonthlyLedger() {
                     }}
                   >
                     {c.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!form.isRefund && accounts.length > 0 && (
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 11, color: "#6B7D5E", marginBottom: 6 }}>
+                或者用现金/储蓄账户支付（不走信用卡，立即计入现金流）
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {accounts.map(a => (
+                  <button
+                    key={a.id}
+                    onClick={() => setForm({ ...form, accountId: form.accountId === a.id ? "" : a.id, cardId: "" })}
+                    style={{
+                      padding: "6px 12px", borderRadius: 20, fontSize: 12.5, cursor: "pointer",
+                      border: `1.5px solid ${form.accountId === a.id ? "#4C8C3C" : "#B8CBA0"}`,
+                      background: form.accountId === a.id ? "#4C8C3C" : "transparent",
+                      color: form.accountId === a.id ? "#FFFFFF" : "#35502E",
+                      fontWeight: form.accountId === a.id ? 700 : 400,
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    {a.name}
                   </button>
                 ))}
               </div>
@@ -2150,6 +2356,14 @@ export default function MonthlyLedger() {
                         borderRadius: 10, fontSize: 10.5, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif",
                       }}>
                         {cards.find(c => c.id === e.cardId).name}
+                      </span>
+                    )}
+                    {e.accountId && accounts.find(a => a.id === e.accountId) && (
+                      <span style={{
+                        background: "rgba(76,140,60,0.15)", color: "#356B2A", padding: "1px 6px",
+                        borderRadius: 10, fontSize: 10.5, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif",
+                      }}>
+                        {accounts.find(a => a.id === e.accountId).name}
                       </span>
                     )}
                     {e.fundId && savingsGoals.find(g => g.id === e.fundId) && (
