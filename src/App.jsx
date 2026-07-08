@@ -517,6 +517,20 @@ export default function MonthlyLedger() {
     setCards(prev => prev.filter(c => c.id !== id));
   }
 
+  // "停用信用卡" only stops future months from showing/using this card — past and the
+  // current month stay untouched, same pattern as ending a subscription
+  function endCard(id, month) {
+    setCards(prev => prev.map(c => c.id === id ? { ...c, endMonth: month } : c));
+  }
+
+  function reactivateCard(id) {
+    setCards(prev => prev.map(c => c.id === id ? { ...c, endMonth: null } : c));
+  }
+
+  function isCardActiveForMonth(card, month) {
+    return !card.endMonth || month <= card.endMonth;
+  }
+
   // cash / savings accounts — for spending that doesn't go through a credit card.
   // unlike card charges, money paid from these accounts leaves immediately (real cashflow impact)
   const [accounts, setAccounts] = useState([]);
@@ -702,8 +716,9 @@ export default function MonthlyLedger() {
       events.push({ date: `${selectedMonth}-${String(day).padStart(2, "0")}`, label: "房租", amount: -rent.amount, type: "rent" });
     }
 
-    // credit card dues
+    // credit card dues (skip cards that have been stopped before this month)
     cards.forEach(c => {
+      if (!isCardActiveForMonth(c, selectedMonth)) return;
       const day = Math.min(c.dueDay, lastDay);
       events.push({ date: `${selectedMonth}-${String(day).padStart(2, "0")}`, label: `${c.name} 还款`, amount: -getCardAmount(c, selectedMonth), type: "cc", cardId: c.id });
     });
@@ -1645,64 +1660,92 @@ export default function MonthlyLedger() {
               {cards.map(c => {
                 const currentAmount = getCardAmount(c, selectedMonth);
                 const isEditing = editingCardId === c.id;
+                const isEnded = !!(c.endMonth && selectedMonth > c.endMonth);
                 return (
                   <div key={c.id} style={{
-                    display: "flex", alignItems: "center", gap: 8, padding: "8px 10px",
-                    border: "1px solid #FBE4E0", borderRadius: 8, marginBottom: 6, background: "#FDEDEA",
+                    border: "1px solid #FBE4E0", borderRadius: 8, marginBottom: 6,
+                    background: isEnded ? "#FFFFFF" : "#FDEDEA", padding: "8px 10px", opacity: isEnded ? 0.75 : 1,
                   }}>
-                    <span style={{ width: 8, height: 8, borderRadius: 2, background: "#F2B6B6", flexShrink: 0 }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</div>
-                      <div style={{ fontSize: 11, color: "#8FA6B5" }}>
-                        本月已刷 ${formatMoney(totalsByCard[c.id] || 0)}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ width: 8, height: 8, borderRadius: 2, background: isEnded ? "#F5DCD8" : "#F2B6B6", flexShrink: 0 }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</div>
+                        <div style={{ fontSize: 11, color: "#8FA6B5" }}>
+                          本月已刷 ${formatMoney(totalsByCard[c.id] || 0)}
+                          {isEnded && ` · 已于${c.endMonth}停用`}
+                          {!isEnded && c.endMonth && ` · 将于${c.endMonth}后停用`}
+                        </div>
                       </div>
-                    </div>
-                    <div style={{ fontSize: 11.5, color: "#8FA6B5", flexShrink: 0 }}>每月{c.dueDay}日</div>
+                      <div style={{ fontSize: 11.5, color: "#8FA6B5", flexShrink: 0 }}>每月{c.dueDay}日</div>
 
-                    {isEditing ? (
-                      <>
-                        <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
-                          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12 }}>$</span>
-                          <input
-                            type="number"
-                            autoFocus
-                            value={editAmountInput}
-                            onChange={e => setEditAmountInput(e.target.value)}
-                            style={{
-                              width: 64, border: "none", borderBottom: "1px solid #F2B6B6", background: "transparent",
-                              fontFamily: "'JetBrains Mono', monospace", fontSize: 13, textAlign: "right", outline: "none", padding: "1px 0",
+                      {isEditing ? (
+                        <>
+                          <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
+                            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12 }}>$</span>
+                            <input
+                              type="number"
+                              autoFocus
+                              value={editAmountInput}
+                              onChange={e => setEditAmountInput(e.target.value)}
+                              style={{
+                                width: 64, border: "none", borderBottom: "1px solid #F2B6B6", background: "transparent",
+                                fontFamily: "'JetBrains Mono', monospace", fontSize: 13, textAlign: "right", outline: "none", padding: "1px 0",
+                              }}
+                            />
+                          </div>
+                          <button
+                            onClick={() => {
+                              const v = parseFloat(editAmountInput);
+                              if (!isNaN(v) && v >= 0) updateCardAmount(c.id, selectedMonth, v);
+                              setEditingCardId(null);
                             }}
-                          />
-                        </div>
-                        <button
-                          onClick={() => {
-                            const v = parseFloat(editAmountInput);
-                            if (!isNaN(v) && v >= 0) updateCardAmount(c.id, selectedMonth, v);
-                            setEditingCardId(null);
-                          }}
-                          style={{ border: "none", background: "#7FA87F", color: "#FFFFFF", borderRadius: 6, padding: "3px 8px", fontSize: 11, cursor: "pointer", flexShrink: 0 }}
-                        >
-                          存
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, flexShrink: 0, minWidth: 56, textAlign: "right" }}>
-                          ${formatMoney(currentAmount)}
-                        </div>
-                        <button
-                          onClick={() => { setEditingCardId(c.id); setEditAmountInput(String(currentAmount)); }}
-                          style={{ border: "none", background: "none", color: "#8FA6B5", cursor: "pointer", padding: 2, flexShrink: 0 }}
-                          title="修改本月还款金额"
-                        >
-                          <Pencil size={13} />
-                        </button>
-                      </>
-                    )}
+                            style={{ border: "none", background: "#7FA87F", color: "#FFFFFF", borderRadius: 6, padding: "3px 8px", fontSize: 11, cursor: "pointer", flexShrink: 0 }}
+                          >
+                            存
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, flexShrink: 0, minWidth: 56, textAlign: "right" }}>
+                            ${formatMoney(currentAmount)}
+                          </div>
+                          {!isEnded && (
+                            <button
+                              onClick={() => { setEditingCardId(c.id); setEditAmountInput(String(currentAmount)); }}
+                              style={{ border: "none", background: "none", color: "#8FA6B5", cursor: "pointer", padding: 2, flexShrink: 0 }}
+                              title="修改本月还款金额"
+                            >
+                              <Pencil size={13} />
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
 
-                    <button onClick={() => removeCard(c.id)} style={{ border: "none", background: "none", color: "#F5DCD8", cursor: "pointer", padding: 2, flexShrink: 0 }}>
-                      <Trash2 size={13} />
-                    </button>
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 6 }}>
+                      {isEnded ? (
+                        <button
+                          onClick={() => reactivateCard(c.id)}
+                          style={{ border: "none", background: "none", color: "#7FA87F", cursor: "pointer", fontSize: 11, fontWeight: 600, padding: 0 }}
+                        >
+                          恢复使用
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => endCard(c.id, selectedMonth)}
+                          style={{ border: "none", background: "none", color: "#F2B6B6", cursor: "pointer", fontSize: 11, fontWeight: 600, padding: 0 }}
+                        >
+                          停用这张卡（{selectedMonth}后不再出现在还款计划里）
+                        </button>
+                      )}
+                      <button
+                        onClick={() => removeCard(c.id)}
+                        style={{ border: "none", background: "none", color: "#F5DCD8", cursor: "pointer", fontSize: 11, padding: 0 }}
+                        title="彻底删除，包括历史月份的记录"
+                      >
+                        彻底删除
+                      </button>
+                    </div>
                   </div>
                 );
               })}
@@ -2262,13 +2305,13 @@ export default function MonthlyLedger() {
             <div style={{ color: "#D9736B", fontSize: 11, marginTop: -6, marginBottom: 10 }}>{categoryError}</div>
           )}
 
-          {cards.length > 0 && (
+          {cards.filter(c => isCardActiveForMonth(c, monthKey(form.date))).length > 0 && (
             <div style={{ marginBottom: 10 }}>
               <div style={{ fontSize: 11, color: form.isRefund ? "#D9736B" : "#8FA6B5", marginBottom: 6 }}>
                 {form.isRefund ? "退到哪张卡（必选）" : "用哪张卡支付"}
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {cards.map(c => (
+                {cards.filter(c => isCardActiveForMonth(c, monthKey(form.date))).map(c => (
                   <button
                     key={c.id}
                     onClick={() => setForm({ ...form, cardId: form.cardId === c.id ? "" : c.id, accountId: "" })}
