@@ -975,7 +975,7 @@ export default function MonthlyLedger() {
     ];
     XLSX.utils.book_append_sheet(wb, sheetOrPlaceholder(netWorthRows, "还没有资产/负债数据"), "资产负债");
 
-    XLSX.writeFile(wb, `丫丫得小钱包_${selectedMonth}.xlsx`);
+    XLSX.writeFile(wb, `茜茜的小钱包_${selectedMonth}.xlsx`);
   }
 
   return (
@@ -1042,7 +1042,7 @@ export default function MonthlyLedger() {
             <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>CHIIKAWA LEDGER</span> · 月度账本
           </div>
           <div style={{ fontWeight: 700, fontSize: 26, lineHeight: 1.3, display: "flex", alignItems: "center", gap: 8 }}>
-            丫丫得小钱包 <span style={{ fontSize: 20 }}>⚽</span>
+            茜茜的小钱包 <span style={{ fontSize: 20 }}>⚽</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14 }}>
             <button onClick={() => shiftMonth(-1)} style={navBtnStyle}>‹</button>
