@@ -1027,7 +1027,7 @@ export default function MonthlyLedger() {
             position: "absolute", top: -14, right: -6, fontSize: 100,
             opacity: 0.18, transform: "rotate(10deg)", lineHeight: 1,
           }}>
-            🐰
+            ⚽
           </div>
           <div style={{
             position: "absolute", top: 16, right: 90, width: 26, height: 26, borderRadius: "50%",
@@ -1042,7 +1042,7 @@ export default function MonthlyLedger() {
             <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>CHIIKAWA LEDGER</span> · 月度账本
           </div>
           <div style={{ fontWeight: 700, fontSize: 26, lineHeight: 1.3, display: "flex", alignItems: "center", gap: 8 }}>
-            丫丫得小钱包 <span style={{ fontSize: 20 }}>🐰</span>
+            丫丫得小钱包 <span style={{ fontSize: 20 }}>⚽</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14 }}>
             <button onClick={() => shiftMonth(-1)} style={navBtnStyle}>‹</button>
@@ -1890,7 +1890,7 @@ export default function MonthlyLedger() {
               borderRadius: 6, padding: "3px 8px", fontSize: 11, fontWeight: 700, letterSpacing: 1,
               transform: "rotate(-8deg)", opacity: 0.9,
               animation: "stampIn 0.5s ease-out", zIndex: 2,
-            }}>🐰 已记录</div>
+            }}>⚽ 已记录</div>
           )}
           <style>{`@keyframes stampIn { 0% { opacity:0; transform: rotate(-8deg) scale(1.6);} 100% {opacity:0.9; transform: rotate(-8deg) scale(1);} }`}</style>
 
@@ -2300,7 +2300,7 @@ export default function MonthlyLedger() {
         <>
         {/* Net worth summary */}
         <div style={{ background: "#6A90A6", color: "#FDF3F1", padding: "18px 20px", borderTop: "none", position: "relative", overflow: "hidden" }}>
-          <div style={{ position: "absolute", top: -14, right: -6, fontSize: 70, opacity: 0.12, transform: "rotate(15deg)" }}>🐰</div>
+          <div style={{ position: "absolute", top: -14, right: -6, fontSize: 70, opacity: 0.12, transform: "rotate(15deg)" }}>⚽</div>
           <div style={{ fontSize: 11, letterSpacing: 2, opacity: 0.6, marginBottom: 8 }}>
             净资产 <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>NET WORTH</span>
           </div>
@@ -2486,7 +2486,7 @@ export default function MonthlyLedger() {
         <>
         {/* Fund total summary */}
         <div style={{ background: "#6A90A6", color: "#FDF3F1", padding: "18px 20px", borderTop: "none", position: "relative", overflow: "hidden" }}>
-          <div style={{ position: "absolute", top: -14, right: -6, fontSize: 70, opacity: 0.12, transform: "rotate(15deg)" }}>🐰</div>
+          <div style={{ position: "absolute", top: -14, right: -6, fontSize: 70, opacity: 0.12, transform: "rotate(15deg)" }}>⚽</div>
           <div style={{ fontSize: 11, letterSpacing: 2, opacity: 0.6, marginBottom: 8 }}>
             基金总额
           </div>
