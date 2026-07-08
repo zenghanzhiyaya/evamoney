@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
-import { Plus, Trash2, Wallet, TrendingUp, TrendingDown, Download, Pencil } from "lucide-react";
+import { Plus, Trash2, Wallet, TrendingUp, TrendingDown, Download, Pencil, Upload } from "lucide-react";
 import * as XLSX from "xlsx";
 
 const BASE_CATEGORIES = [
@@ -1065,6 +1065,69 @@ export default function MonthlyLedger() {
     XLSX.writeFile(wb, `茜茜的小钱包_${selectedMonth}.xlsx`);
   }
 
+  // full data backup — everything the app stores, in one JSON file, so switching to a new
+  // deployment/update never means retyping all your data
+  const importFileRef = useRef(null);
+  const [importMessage, setImportMessage] = useState("");
+
+  function exportAllDataBackup() {
+    const backup = {
+      _app: "茜茜的小钱包",
+      _exportedAt: new Date().toISOString(),
+      _version: 1,
+      entries,
+      recurringExpenses,
+      customCategories,
+      transfers,
+      incomeEntries,
+      rentByMonth,
+      cards,
+      startBalanceByMonth,
+      accounts,
+      savingsGoals,
+      budgetsByMonth,
+      assets,
+      liabilities,
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `茜茜的小钱包-备份-${todayISO()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function importAllDataBackup(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (data.entries) setEntries(data.entries);
+        if (data.recurringExpenses) setRecurringExpenses(data.recurringExpenses);
+        if (data.customCategories) setCustomCategories(data.customCategories);
+        if (data.transfers) setTransfers(data.transfers);
+        if (data.incomeEntries) setIncomeEntries(data.incomeEntries);
+        if (data.rentByMonth) setRentByMonth(data.rentByMonth);
+        if (data.cards) setCards(data.cards);
+        if (data.startBalanceByMonth) setStartBalanceByMonth(data.startBalanceByMonth);
+        if (data.accounts) setAccounts(data.accounts);
+        if (data.savingsGoals) setSavingsGoals(data.savingsGoals);
+        if (data.budgetsByMonth) setBudgetsByMonth(data.budgetsByMonth);
+        if (data.assets) setAssets(data.assets);
+        if (data.liabilities) setLiabilities(data.liabilities);
+        setImportMessage("导入成功！数据已恢复");
+        setTimeout(() => setImportMessage(""), 4000);
+      } catch (err) {
+        setImportMessage("导入失败，文件格式不对");
+        setTimeout(() => setImportMessage(""), 4000);
+      }
+    };
+    reader.readAsText(file);
+  }
+
   return (
     <div style={{
       minHeight: "100vh",
@@ -1178,6 +1241,55 @@ export default function MonthlyLedger() {
           <Download size={14} />
           导出 {selectedMonth} Excel 报表
         </button>
+
+        {/* Full data backup / restore — carry all your data to a new deployment or update */}
+        <div style={{
+          background: "#FFFFFF", border: "1px solid #B8CBA0", borderTop: "none",
+          padding: "10px 16px", display: "flex", gap: 8,
+        }}>
+          <button
+            onClick={exportAllDataBackup}
+            style={{
+              flex: 1, background: "transparent", border: "1px solid #35502E", borderRadius: 8,
+              padding: "8px 0", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              cursor: "pointer", fontSize: 12.5, color: "#35502E", fontWeight: 600,
+            }}
+          >
+            <Download size={13} /> 备份全部数据
+          </button>
+          <button
+            onClick={() => importFileRef.current && importFileRef.current.click()}
+            style={{
+              flex: 1, background: "transparent", border: "1px solid #35502E", borderRadius: 8,
+              padding: "8px 0", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              cursor: "pointer", fontSize: 12.5, color: "#35502E", fontWeight: 600,
+            }}
+          >
+            <Upload size={13} /> 恢复数据
+          </button>
+          <input
+            ref={importFileRef}
+            type="file"
+            accept="application/json"
+            style={{ display: "none" }}
+            onChange={e => {
+              const file = e.target.files && e.target.files[0];
+              if (!file) return;
+              if (window.confirm("恢复数据会覆盖当前App里的所有数据，确定要继续吗？")) {
+                importAllDataBackup(file);
+              }
+              e.target.value = "";
+            }}
+          />
+        </div>
+        {importMessage && (
+          <div style={{
+            background: "#FFFFFF", border: "1px solid #B8CBA0", borderTop: "none",
+            padding: "8px 16px", fontSize: 12, color: importMessage.includes("成功") ? "#4C8C3C" : "#A8442E", textAlign: "center",
+          }}>
+            {importMessage}
+          </div>
+        )}
 
         {activeTab === "ledger" && (
         <>
