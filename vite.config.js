@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["apple-touch-icon.png"],
       manifest: {
-        name: "丫丫得小钱包",
-        short_name: "小钱包",
+        name: "姚总的银行",
+        short_name: "姚总银行",
         description: "月度支出、信用卡现金流与储蓄规划",
         theme_color: "#6A90A6",
         background_color: "#FDF3F1",
