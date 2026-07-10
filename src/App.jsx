@@ -73,6 +73,100 @@ export default function MonthlyLedger() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  // Face ID / fingerprint app-lock — uses the device's own biometric sensor (WebAuthn platform
+  // authenticator) as a quick local unlock on top of your existing Supabase login. It doesn't
+  // replace the email/password sign-in itself, it just gates re-opening the app on this device.
+  const [faceIdSupported, setFaceIdSupported] = useState(false);
+  const [faceIdEnabled, setFaceIdEnabled] = useState(false);
+  const [faceIdLocked, setFaceIdLocked] = useState(false);
+  const [faceIdError, setFaceIdError] = useState("");
+  const [faceIdBusy, setFaceIdBusy] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        if (window.PublicKeyCredential && await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()) {
+          setFaceIdSupported(true);
+        }
+      } catch (e) {}
+      const savedFlag = localStorage.getItem("faceIdEnabled") === "true";
+      setFaceIdEnabled(savedFlag);
+    })();
+  }, []);
+
+  // once we know there's a live session, lock the app behind Face ID if the user turned it on
+  useEffect(() => {
+    if (session && faceIdEnabled) setFaceIdLocked(true);
+  }, [session, faceIdEnabled]);
+
+  function randomChallenge() {
+    const arr = new Uint8Array(32);
+    crypto.getRandomValues(arr);
+    return arr;
+  }
+
+  async function enableFaceId() {
+    setFaceIdError("");
+    setFaceIdBusy(true);
+    try {
+      const credential = await navigator.credentials.create({
+        publicKey: {
+          challenge: randomChallenge(),
+          rp: { name: "小钱包" },
+          user: {
+            id: randomChallenge(),
+            name: session?.user?.email || "user",
+            displayName: session?.user?.email || "user",
+          },
+          pubKeyCredParams: [{ alg: -7, type: "public-key" }, { alg: -257, type: "public-key" }],
+          authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
+          timeout: 60000,
+        },
+      });
+      if (credential) {
+        const id = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
+        localStorage.setItem("faceIdCredentialId", id);
+        localStorage.setItem("faceIdEnabled", "true");
+        setFaceIdEnabled(true);
+      }
+    } catch (e) {
+      setFaceIdError("设置失败：" + (e.message || "请确认设备支持面容/指纹识别"));
+    } finally {
+      setFaceIdBusy(false);
+    }
+  }
+
+  function disableFaceId() {
+    localStorage.removeItem("faceIdEnabled");
+    localStorage.removeItem("faceIdCredentialId");
+    setFaceIdEnabled(false);
+    setFaceIdLocked(false);
+  }
+
+  async function unlockWithFaceId() {
+    setFaceIdError("");
+    setFaceIdBusy(true);
+    try {
+      const storedId = localStorage.getItem("faceIdCredentialId");
+      const allowCredentials = storedId
+        ? [{ id: Uint8Array.from(atob(storedId), c => c.charCodeAt(0)), type: "public-key" }]
+        : undefined;
+      await navigator.credentials.get({
+        publicKey: {
+          challenge: randomChallenge(),
+          allowCredentials,
+          userVerification: "required",
+          timeout: 60000,
+        },
+      });
+      setFaceIdLocked(false);
+    } catch (e) {
+      setFaceIdError("验证失败，请重试");
+    } finally {
+      setFaceIdBusy(false);
+    }
+  }
+
   async function handleAuthSubmit() {
     if (!authEmail.trim() || !authPassword) {
       setAuthError("请输入邮箱和密码");
@@ -1428,6 +1522,49 @@ export default function MonthlyLedger() {
     );
   }
 
+  if (faceIdLocked) {
+    return (
+      <div style={{
+        minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
+        background: "#DCE8D2", padding: 24,
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif",
+      }}>
+        <div style={{
+          width: "100%", maxWidth: 340, background: "#FFFFFF", borderRadius: 20, padding: 32,
+          boxShadow: "0 8px 28px rgba(31,74,46,0.18)", textAlign: "center",
+        }}>
+          <div style={{ fontSize: 44, marginBottom: 12 }}>🔒</div>
+          <div style={{ fontSize: 17, fontWeight: 700, color: "#1F4A2E", marginBottom: 6 }}>
+            小钱包已锁定
+          </div>
+          <div style={{ fontSize: 12.5, color: "#5A7360", marginBottom: 20 }}>
+            用面容/指纹解锁继续使用
+          </div>
+          {faceIdError && (
+            <div style={{ color: "#A8382E", fontSize: 12.5, marginBottom: 12 }}>{faceIdError}</div>
+          )}
+          <button
+            onClick={unlockWithFaceId}
+            disabled={faceIdBusy}
+            style={{
+              width: "100%", background: "#1F4A2E", color: "#FFFFFF", border: "none", borderRadius: 10,
+              padding: "12px 0", fontSize: 14, fontWeight: 700, cursor: faceIdBusy ? "default" : "pointer",
+              opacity: faceIdBusy ? 0.7 : 1,
+            }}
+          >
+            {faceIdBusy ? "验证中…" : "面容 / 指纹解锁"}
+          </button>
+          <button
+            onClick={handleSignOut}
+            style={{ border: "none", background: "none", color: "#5A7360", cursor: "pointer", fontSize: 12, marginTop: 14, padding: 0 }}
+          >
+            退出登录
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{
       minHeight: "100vh",
@@ -1560,6 +1697,36 @@ export default function MonthlyLedger() {
             <LogOut size={12} /> 退出登录
           </button>
         </div>
+
+        {faceIdSupported && (
+          <div style={{
+            background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none",
+            padding: "8px 16px", display: "flex", alignItems: "center", justifyContent: "space-between",
+          }}>
+            <div style={{ fontSize: 11.5, color: "#5A7360" }}>
+              面容 / 指纹解锁{faceIdEnabled ? "已开启" : "（打开 App 时需要验证）"}
+            </div>
+            <button
+              onClick={faceIdEnabled ? disableFaceId : enableFaceId}
+              disabled={faceIdBusy}
+              style={{
+                border: "1px solid #1F4A2E", background: faceIdEnabled ? "#1F4A2E" : "transparent",
+                color: faceIdEnabled ? "#FFFFFF" : "#1F4A2E", borderRadius: 20, padding: "4px 12px",
+                cursor: "pointer", fontSize: 11, fontWeight: 600,
+              }}
+            >
+              {faceIdBusy ? "处理中…" : (faceIdEnabled ? "关闭" : "开启")}
+            </button>
+          </div>
+        )}
+        {faceIdError && !faceIdLocked && (
+          <div style={{
+            background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none",
+            padding: "6px 16px", fontSize: 11.5, color: "#A8382E",
+          }}>
+            {faceIdError}
+          </div>
+        )}
 
         {/* Full data backup / restore — carry all your data to a new deployment or update */}
         <div style={{
