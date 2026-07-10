@@ -83,6 +83,8 @@ export default function MonthlyLedger() {
   );
 
   const [showAddCategory, setShowAddCategory] = useState(false);
+  const [adjustingPerson, setAdjustingPerson] = useState(null);
+  const [adjustAmountInput, setAdjustAmountInput] = useState("");
 
   function addCategory(onCreated) {
     const name = newCategoryName.trim();
@@ -299,8 +301,40 @@ export default function MonthlyLedger() {
     setTransfers(prev => prev.filter(t => t.id !== id));
   }
 
+  // manual adjustments to split-expense balances — lets you write off (forgive) a debt or
+  // correct the running total for a person without needing a matching transfer record
+  const [splitAdjustments, setSplitAdjustments] = useState([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await window.storage.get("ledger:splitAdjustments", false);
+        if (res && res.value) setSplitAdjustments(JSON.parse(res.value));
+      } catch (e) {}
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try { await window.storage.set("ledger:splitAdjustments", JSON.stringify(splitAdjustments), false); } catch (e) {}
+    })();
+  }, [splitAdjustments]);
+
+  function addSplitAdjustment(person, amount, note) {
+    setSplitAdjustments(prev => [...prev, {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      person, amount, note: note || "", date: todayISO(),
+    }]);
+  }
+
+  function writeOffSplit(person, currentAmount) {
+    // forgive the entire remaining balance for this person
+    addSplitAdjustment(person, currentAmount, "核销");
+  }
+
   // "谁该分摊多少钱" — running total of split-expense amounts owed by each person,
-  // net of any transfers already received from them (matched by name, across all months)
+  // net of any transfers already received from them and any manual write-offs/adjustments
+  // (matched by name, across all months)
   const splitSummary = useMemo(() => {
     const totals = {};
     entries.forEach(e => {
@@ -318,11 +352,15 @@ export default function MonthlyLedger() {
         totals[t.person.trim()] -= t.amount;
       }
     });
+    splitAdjustments.forEach(a => {
+      const key = (a.person || "").trim();
+      if (key && totals[key] !== undefined) totals[key] -= a.amount;
+    });
     return Object.entries(totals)
       .map(([person, amount]) => ({ person, amount }))
       .filter(x => Math.abs(x.amount) > 0.005)
       .sort((a, b) => b.amount - a.amount);
-  }, [entries, transfers]);
+  }, [entries, transfers, splitAdjustments]);
 
   // total spending for an arbitrary month (used by the trend tab) — mirrors the logic used for
   // the selected month's totalsByCategory/recurringTotal, but generalized to any month
@@ -1145,6 +1183,7 @@ export default function MonthlyLedger() {
       budgetsByMonth,
       assets,
       liabilities,
+      splitAdjustments,
     };
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -1175,6 +1214,7 @@ export default function MonthlyLedger() {
         if (data.budgetsByMonth) setBudgetsByMonth(data.budgetsByMonth);
         if (data.assets) setAssets(data.assets);
         if (data.liabilities) setLiabilities(data.liabilities);
+        if (data.splitAdjustments) setSplitAdjustments(data.splitAdjustments);
         setImportMessage("导入成功！数据已恢复");
         setTimeout(() => setImportMessage(""), 4000);
       } catch (err) {
@@ -2546,14 +2586,55 @@ export default function MonthlyLedger() {
             <div style={{ marginBottom: 12, border: "1px solid #F5DCD8", borderRadius: 8, padding: "10px 12px", background: "#FDEDEA" }}>
               <div style={{ fontSize: 11, color: "#4A6478", fontWeight: 700, marginBottom: 6 }}>谁该分摊多少钱</div>
               {splitSummary.map(s => (
-                <div key={s.person} style={{ display: "flex", justifyContent: "space-between", padding: "3px 0", fontSize: 12.5 }}>
-                  <span style={{ color: "#4A6478" }}>{s.person}</span>
-                  <span style={{
-                    fontFamily: "'JetBrains Mono', monospace", fontWeight: 700,
-                    color: s.amount > 0 ? "#D9736B" : "#7FA87F",
-                  }}>
-                    {s.amount > 0 ? `欠你 $${formatMoney(s.amount)}` : `你欠 $${formatMoney(Math.abs(s.amount))}`}
-                  </span>
+                <div key={s.person} style={{ padding: "5px 0", borderBottom: "1px dashed #F5DCD8" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12.5 }}>
+                    <span style={{ color: "#4A6478" }}>{s.person}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{
+                        fontFamily: "'JetBrains Mono', monospace", fontWeight: 700,
+                        color: s.amount > 0 ? "#D9736B" : "#7FA87F",
+                      }}>
+                        {s.amount > 0 ? `欠你 $${formatMoney(s.amount)}` : `你欠 $${formatMoney(Math.abs(s.amount))}`}
+                      </span>
+                      <button
+                        onClick={() => { setAdjustingPerson(adjustingPerson === s.person ? null : s.person); setAdjustAmountInput(""); }}
+                        style={{ border: "none", background: "none", color: "#8FA6B5", cursor: "pointer", padding: 2 }}
+                        title="调整金额"
+                      >
+                        <Pencil size={12} />
+                      </button>
+                      <button
+                        onClick={() => writeOffSplit(s.person, s.amount)}
+                        style={{ border: "none", background: "none", color: "#8FA6B5", cursor: "pointer", fontSize: 11, padding: 0 }}
+                        title="核销这笔账，不需要真的转账"
+                      >
+                        核销
+                      </button>
+                    </div>
+                  </div>
+                  {adjustingPerson === s.person && (
+                    <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
+                      <input
+                        type="number"
+                        autoFocus
+                        placeholder="调整金额，正数=减少欠款，负数=增加"
+                        value={adjustAmountInput}
+                        onChange={e => setAdjustAmountInput(e.target.value)}
+                        style={{ border: "1px solid #F5DCD8", borderRadius: 6, padding: "5px 8px", fontSize: 12, flex: 1, fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
+                      />
+                      <button
+                        onClick={() => {
+                          const v = parseFloat(adjustAmountInput);
+                          if (!isNaN(v) && v !== 0) addSplitAdjustment(s.person, v, "手动调整");
+                          setAdjustingPerson(null);
+                          setAdjustAmountInput("");
+                        }}
+                        style={{ border: "none", background: "#7FA87F", color: "#FFFFFF", borderRadius: 6, padding: "0 12px", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
+                      >
+                        确认
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
