@@ -80,13 +80,19 @@ export default function MonthlyLedger() {
     }
     setAuthBusy(true);
     setAuthError("");
-    const fn = authMode === "login" ? supabase.auth.signInWithPassword : supabase.auth.signUp;
-    const { error } = await fn({ email: authEmail.trim(), password: authPassword });
-    setAuthBusy(false);
-    if (error) {
-      setAuthError(error.message);
-    } else if (authMode === "signup") {
-      setAuthError("注册成功！如果需要邮箱验证，请查收邮件后再登录");
+    try {
+      const { error } = authMode === "login"
+        ? await supabase.auth.signInWithPassword({ email: authEmail.trim(), password: authPassword })
+        : await supabase.auth.signUp({ email: authEmail.trim(), password: authPassword });
+      if (error) {
+        setAuthError(error.message);
+      } else if (authMode === "signup") {
+        setAuthError("注册成功！如果需要邮箱验证，请查收邮件后再登录");
+      }
+    } catch (e) {
+      setAuthError("网络错误，请重试" + (e && e.message ? "：" + e.message : ""));
+    } finally {
+      setAuthBusy(false);
     }
   }
 
