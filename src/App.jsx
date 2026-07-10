@@ -1241,10 +1241,10 @@ export default function MonthlyLedger() {
         input, button, select { min-width: 0; box-sizing: border-box; }
         input[type="number"] { width: 100%; }
 
-        button { transition: transform 0.12s ease, opacity 0.12s ease, filter 0.15s ease, box-shadow 0.15s ease; }
-        button:active { transform: scale(0.95); opacity: 0.85; }
+        button { transition: transform 0.1s ease-out, opacity 0.1s ease-out; touch-action: manipulation; }
+        button:active { transition: none; transform: scale(0.94); opacity: 0.8; }
         @media (hover: hover) {
-          button:hover { filter: brightness(0.96); }
+          button:hover { transition: filter 0.15s ease; filter: brightness(0.96); }
         }
         input[type="text"], input[type="number"], input[type="date"], input[type="month"] {
           transition: border-color 0.15s ease, box-shadow 0.15s ease;
