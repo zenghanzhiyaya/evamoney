@@ -47,7 +47,7 @@ function todayISO() {
 export default function MonthlyLedger() {
   const [entries, setEntries] = useState([]);
   const [loaded, setLoaded] = useState(false);
-  const [form, setForm] = useState({ category: "food", amount: "", excludedAmount: "", splitPerson: "", note: "", date: todayISO(), cardId: "", accountId: "", fundId: "", isRefund: false });
+  const [form, setForm] = useState({ category: "food", amount: "", splits: [], note: "", date: todayISO(), cardId: "", accountId: "", fundId: "", isRefund: false });
   const [selectedMonth, setSelectedMonth] = useState(todayISO().slice(0, 7));
   const [activeTab, setActiveTab] = useState("quickadd"); // default landing tab
   const [stampFlash, setStampFlash] = useState(false);
@@ -304,10 +304,14 @@ export default function MonthlyLedger() {
   const splitSummary = useMemo(() => {
     const totals = {};
     entries.forEach(e => {
-      if (e.excludedAmount > 0 && e.splitPerson && e.splitPerson.trim()) {
-        const key = e.splitPerson.trim();
-        totals[key] = (totals[key] || 0) + e.excludedAmount;
-      }
+      const rows = (e.splits && e.splits.length > 0)
+        ? e.splits
+        : (e.excludedAmount > 0 && e.splitPerson ? [{ person: e.splitPerson, amount: e.excludedAmount }] : []);
+      rows.forEach(s => {
+        const key = (s.person || "").trim();
+        if (!key || !s.amount) return;
+        totals[key] = (totals[key] || 0) + s.amount;
+      });
     });
     transfers.forEach(t => {
       if (t.direction === "in" && t.person && t.person.trim() && totals[t.person.trim()] !== undefined) {
@@ -803,17 +807,13 @@ export default function MonthlyLedger() {
         return;
       }
     }
-    const excluded = parseFloat(form.excludedAmount) || 0;
-    if (excluded < 0) {
-      setError("分摊金额不能是负数");
-      return;
-    }
+    // only count split rows that have both a person name and a valid amount
+    const validSplits = form.splits
+      .map(s => ({ person: s.person.trim(), amount: parseFloat(s.amount) || 0 }))
+      .filter(s => s.person && s.amount > 0);
+    const excluded = validSplits.reduce((a, s) => a + s.amount, 0);
     if (excluded >= amt) {
-      setError("分摊金额不能大于或等于总金额");
-      return;
-    }
-    if (excluded > 0 && !form.splitPerson.trim()) {
-      setError("请填写这笔分摊是谁的");
+      setError("所有人分摊的金额加起来不能大于或等于总金额");
       return;
     }
     setError("");
@@ -822,7 +822,7 @@ export default function MonthlyLedger() {
       category: form.category,
       amount: amt,
       excludedAmount: excluded,
-      splitPerson: excluded > 0 ? form.splitPerson.trim() : "",
+      splits: validSplits,
       note: form.note.trim(),
       date: form.date,
       cardId: form.cardId || "",
@@ -844,9 +844,24 @@ export default function MonthlyLedger() {
       ));
     }
 
-    setForm({ ...form, amount: "", excludedAmount: "", splitPerson: "", note: "" });
+    setForm({ ...form, amount: "", splits: [], note: "" });
     setStampFlash(true);
     setTimeout(() => setStampFlash(false), 650);
+  }
+
+  function addSplitRow() {
+    setForm(prev => ({ ...prev, splits: [...prev.splits, { person: "", amount: "" }] }));
+  }
+
+  function updateSplitRow(index, field, value) {
+    setForm(prev => ({
+      ...prev,
+      splits: prev.splits.map((s, i) => i === index ? { ...s, [field]: value } : s),
+    }));
+  }
+
+  function removeSplitRow(index) {
+    setForm(prev => ({ ...prev, splits: prev.splits.filter((_, i) => i !== index) }));
   }
 
   // custom numeric keypad for quick-add
@@ -1048,7 +1063,7 @@ export default function MonthlyLedger() {
       分类: e.recurring ? "订阅/自动扣款" : (CAT_MAP[e.category]?.label || e.category),
       金额: e.isRefund ? -e.amount : e.amount,
       他人分摊: e.excludedAmount || 0,
-      分摊对象: e.splitPerson || "",
+      分摊对象: (e.splits && e.splits.length > 0) ? e.splits.map(s => `${s.person}:${s.amount}`).join("; ") : (e.splitPerson || ""),
       计入支出: e.isRefund ? -e.amount : (e.amount - (e.excludedAmount || 0)),
       类型: e.isRefund ? "退款" : (e.recurring ? "订阅" : "支出"),
       信用卡: (e.cardId && cards.find(c => c.id === e.cardId)?.name) || "",
@@ -2469,38 +2484,61 @@ export default function MonthlyLedger() {
             ))}
           </div>
 
-          {/* shared/reimbursed portion — e.g. you fronted the bill for a friend */}
+          {/* shared/reimbursed portion — e.g. multiple friends splitting a bill you fronted */}
           <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 11, color: "#8FA6B5", marginBottom: 6 }}>
-              有人分摊这笔钱吗？（比如帮朋友代付，之后对方会转账还你）
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+              <div style={{ fontSize: 11, color: "#8FA6B5" }}>
+                有人分摊这笔钱吗？（比如帮朋友代付，之后对方会转账还你）
+              </div>
+              <button
+                onClick={addSplitRow}
+                style={{
+                  border: "1px dashed #8FA6B5", background: "transparent", color: "#8FA6B5",
+                  borderRadius: 20, padding: "3px 10px", fontSize: 11, cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: 3, flexShrink: 0,
+                }}
+              >
+                <Plus size={11} /> 加一个人
+              </button>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: parseFloat(form.excludedAmount) > 0 ? 6 : 0 }}>
-              <div style={{ display: "flex", alignItems: "center", flex: 1, border: "1px solid #F5DCD8", borderRadius: 8, padding: "8px 10px" }}>
-                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, marginRight: 4, color: "#4A6478" }}>$</span>
+
+            {form.splits.map((s, idx) => (
+              <div key={idx} style={{ display: "flex", gap: 6, marginBottom: 6 }}>
                 <input
-                  type="number"
-                  placeholder="不计入支出的金额（可选）"
-                  value={form.excludedAmount}
-                  onChange={e => setForm({ ...form, excludedAmount: e.target.value })}
-                  style={{ border: "none", outline: "none", width: "100%", fontFamily: "'JetBrains Mono', monospace", fontSize: 13, background: "transparent" }}
+                  type="text"
+                  placeholder="姓名"
+                  value={s.person}
+                  onChange={e => updateSplitRow(idx, "person", e.target.value)}
+                  style={{ border: "1px solid #F5DCD8", borderRadius: 8, padding: "7px 9px", fontSize: 13, flex: "1 1 90px", outline: "none" }}
                 />
+                <div style={{ display: "flex", alignItems: "center", flex: "0 0 100px", border: "1px solid #F5DCD8", borderRadius: 8, padding: "7px 9px" }}>
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, marginRight: 4, color: "#4A6478" }}>$</span>
+                  <input
+                    type="number"
+                    placeholder="金额"
+                    value={s.amount}
+                    onChange={e => updateSplitRow(idx, "amount", e.target.value)}
+                    style={{ border: "none", outline: "none", width: "100%", fontFamily: "'JetBrains Mono', monospace", fontSize: 13, background: "transparent" }}
+                  />
+                </div>
+                <button
+                  onClick={() => removeSplitRow(idx)}
+                  style={{ border: "none", background: "none", color: "#F5DCD8", cursor: "pointer", padding: "0 4px", flexShrink: 0 }}
+                >
+                  <Trash2 size={14} />
+                </button>
               </div>
-            </div>
-            {parseFloat(form.excludedAmount) > 0 && (
-              <input
-                type="text"
-                placeholder="这笔是谁分摊的？（姓名）"
-                value={form.splitPerson}
-                onChange={e => setForm({ ...form, splitPerson: e.target.value })}
-                style={{ border: "1px solid #F5DCD8", borderRadius: 8, padding: "8px 10px", fontSize: 13, width: "100%", outline: "none", marginBottom: 6 }}
-              />
-            )}
-            {parseFloat(form.excludedAmount) > 0 && parseFloat(form.amount) > 0 && (
-              <div style={{ fontSize: 11, color: "#7FA87F" }}>
-                实际计入本月支出：${formatMoney(Math.max(0, parseFloat(form.amount) - parseFloat(form.excludedAmount)))}
-                （信用卡还是会算刷了 ${formatMoney(parseFloat(form.amount))} 的全额）
-              </div>
-            )}
+            ))}
+
+            {form.splits.length > 0 && parseFloat(form.amount) > 0 && (() => {
+              const totalSplit = form.splits.reduce((a, s) => a + (parseFloat(s.amount) || 0), 0);
+              return totalSplit > 0 ? (
+                <div style={{ fontSize: 11, color: "#7FA87F" }}>
+                  实际计入本月支出：${formatMoney(Math.max(0, parseFloat(form.amount) - totalSplit))}
+                  （信用卡还是会算刷了 ${formatMoney(parseFloat(form.amount))} 的全额）
+                </div>
+              ) : null;
+            })()}
           </div>
 
           {/* who owes how much — running total across all your split expenses, net of transfers already received */}
@@ -2604,7 +2642,7 @@ export default function MonthlyLedger() {
                         background: "rgba(127,168,127,0.15)", color: "#7FA87F", padding: "1px 6px",
                         borderRadius: 10, fontSize: 10.5, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif",
                       }}>
-                        他人分摊{e.splitPerson ? `（${e.splitPerson}）` : ""} ${formatMoney(e.excludedAmount)}
+                        他人分摊{(e.splits && e.splits.length > 0) ? `（${e.splits.map(s => s.person).join("、")}）` : (e.splitPerson ? `（${e.splitPerson}）` : "")} ${formatMoney(e.excludedAmount)}
                       </span>
                     )}
                   </div>
