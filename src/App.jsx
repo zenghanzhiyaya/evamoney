@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
-import { Plus, Trash2, Wallet, TrendingUp, TrendingDown, Download, Pencil, Upload } from "lucide-react";
+import { Plus, Trash2, Wallet, TrendingUp, TrendingDown, Download, Pencil, Upload, LogOut, Cloud, CloudOff } from "lucide-react";
 import * as XLSX from "xlsx";
+import { supabase } from "./supabaseClient";
 
 const BASE_CATEGORIES = [
   { key: "food", label: "餐饮", color: "#A8382E" },
@@ -45,6 +46,54 @@ function todayISO() {
 }
 
 export default function MonthlyLedger() {
+  // cloud auth — email/password login via Supabase; data syncs across devices once signed in
+  const [session, setSession] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [authMode, setAuthMode] = useState("login"); // "login" | "signup"
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [authBusy, setAuthBusy] = useState(false);
+  const [cloudLoaded, setCloudLoaded] = useState(false);
+  const [syncStatus, setSyncStatus] = useState("idle"); // "idle" | "syncing" | "synced" | "error"
+  const cloudLoadedRef = useRef(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setAuthLoading(false);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
+      if (!newSession) {
+        setCloudLoaded(false);
+        cloudLoadedRef.current = false;
+      }
+    });
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  async function handleAuthSubmit() {
+    if (!authEmail.trim() || !authPassword) {
+      setAuthError("请输入邮箱和密码");
+      return;
+    }
+    setAuthBusy(true);
+    setAuthError("");
+    const fn = authMode === "login" ? supabase.auth.signInWithPassword : supabase.auth.signUp;
+    const { error } = await fn({ email: authEmail.trim(), password: authPassword });
+    setAuthBusy(false);
+    if (error) {
+      setAuthError(error.message);
+    } else if (authMode === "signup") {
+      setAuthError("注册成功！如果需要邮箱验证，请查收邮件后再登录");
+    }
+  }
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+  }
+
   const [entries, setEntries] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [form, setForm] = useState({ category: "food", amount: "", splits: [], note: "", date: todayISO(), cardId: "", accountId: "", fundId: "", isRefund: false });
@@ -1165,8 +1214,8 @@ export default function MonthlyLedger() {
   const importFileRef = useRef(null);
   const [importMessage, setImportMessage] = useState("");
 
-  function exportAllDataBackup() {
-    const backup = {
+  function buildBackupObject() {
+    return {
       _app: "小钱包",
       _exportedAt: new Date().toISOString(),
       _version: 1,
@@ -1185,6 +1234,72 @@ export default function MonthlyLedger() {
       liabilities,
       splitAdjustments,
     };
+  }
+
+  function applyBackupData(data) {
+    if (data.entries) setEntries(data.entries);
+    if (data.recurringExpenses) setRecurringExpenses(data.recurringExpenses);
+    if (data.customCategories) setCustomCategories(data.customCategories);
+    if (data.transfers) setTransfers(data.transfers);
+    if (data.incomeEntries) setIncomeEntries(data.incomeEntries);
+    if (data.rentByMonth) setRentByMonth(data.rentByMonth);
+    if (data.cards) setCards(data.cards);
+    if (data.startBalanceByMonth) setStartBalanceByMonth(data.startBalanceByMonth);
+    if (data.accounts) setAccounts(data.accounts);
+    if (data.savingsGoals) setSavingsGoals(data.savingsGoals);
+    if (data.budgetsByMonth) setBudgetsByMonth(data.budgetsByMonth);
+    if (data.assets) setAssets(data.assets);
+    if (data.liabilities) setLiabilities(data.liabilities);
+    if (data.splitAdjustments) setSplitAdjustments(data.splitAdjustments);
+  }
+
+  // load this user's data from the cloud once they're signed in
+  useEffect(() => {
+    if (!session) return;
+    (async () => {
+      try {
+        const { data, error: fetchError } = await supabase
+          .from("app_data")
+          .select("data")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+        if (!fetchError && data && data.data) {
+          applyBackupData(data.data);
+        }
+      } catch (e) {
+        // offline or network error — fall back to whatever is already in local storage
+      }
+      cloudLoadedRef.current = true;
+      setCloudLoaded(true);
+    })();
+  }, [session]);
+
+  // push to the cloud after things settle down, so switching devices always picks up the latest
+  useEffect(() => {
+    if (!session || !cloudLoaded) return;
+    setSyncStatus("syncing");
+    const timer = setTimeout(async () => {
+      try {
+        const backup = buildBackupObject();
+        const { error: syncError } = await supabase.from("app_data").upsert({
+          user_id: session.user.id,
+          data: backup,
+          updated_at: new Date().toISOString(),
+        });
+        setSyncStatus(syncError ? "error" : "synced");
+      } catch (e) {
+        setSyncStatus("error");
+      }
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [
+    session, cloudLoaded, entries, recurringExpenses, customCategories, transfers, incomeEntries,
+    rentByMonth, cards, startBalanceByMonth, accounts, savingsGoals, budgetsByMonth, assets,
+    liabilities, splitAdjustments,
+  ]);
+
+  function exportAllDataBackup() {
+    const backup = buildBackupObject();
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -1201,20 +1316,7 @@ export default function MonthlyLedger() {
     reader.onload = (e) => {
       try {
         const data = JSON.parse(e.target.result);
-        if (data.entries) setEntries(data.entries);
-        if (data.recurringExpenses) setRecurringExpenses(data.recurringExpenses);
-        if (data.customCategories) setCustomCategories(data.customCategories);
-        if (data.transfers) setTransfers(data.transfers);
-        if (data.incomeEntries) setIncomeEntries(data.incomeEntries);
-        if (data.rentByMonth) setRentByMonth(data.rentByMonth);
-        if (data.cards) setCards(data.cards);
-        if (data.startBalanceByMonth) setStartBalanceByMonth(data.startBalanceByMonth);
-        if (data.accounts) setAccounts(data.accounts);
-        if (data.savingsGoals) setSavingsGoals(data.savingsGoals);
-        if (data.budgetsByMonth) setBudgetsByMonth(data.budgetsByMonth);
-        if (data.assets) setAssets(data.assets);
-        if (data.liabilities) setLiabilities(data.liabilities);
-        if (data.splitAdjustments) setSplitAdjustments(data.splitAdjustments);
+        applyBackupData(data);
         setImportMessage("导入成功！数据已恢复");
         setTimeout(() => setImportMessage(""), 4000);
       } catch (err) {
@@ -1223,6 +1325,101 @@ export default function MonthlyLedger() {
       }
     };
     reader.readAsText(file);
+  }
+
+  if (authLoading) {
+    return (
+      <div style={{
+        minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
+        background: "#DCE8D2", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif",
+      }}>
+        <div style={{ color: "#1F4A2E", fontSize: 14 }}>加载中…</div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div style={{
+        minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
+        background: "#DCE8D2", padding: 24,
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif",
+      }}>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap" />
+        <div style={{
+          width: "100%", maxWidth: 360, background: "#FFFFFF", borderRadius: 20, padding: 28,
+          boxShadow: "0 8px 28px rgba(31,74,46,0.18)",
+        }}>
+          <div style={{ fontSize: 22, fontWeight: 700, color: "#1F4A2E", marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
+            小钱包 <span style={{ fontSize: 18 }}>⚽</span>
+          </div>
+          <div style={{ fontSize: 12.5, color: "#5A7360", marginBottom: 20 }}>
+            登录后，你的数据会在所有设备间自动同步
+          </div>
+
+          <div style={{ display: "flex", gap: 4, marginBottom: 16, background: "#DCE8D2", borderRadius: 10, padding: 4 }}>
+            <button
+              onClick={() => { setAuthMode("login"); setAuthError(""); }}
+              style={{
+                flex: 1, padding: "8px 0", border: "none", borderRadius: 7, cursor: "pointer",
+                background: authMode === "login" ? "#1F4A2E" : "transparent",
+                color: authMode === "login" ? "#FFFFFF" : "#5A7360",
+                fontWeight: 700, fontSize: 13,
+              }}
+            >
+              登录
+            </button>
+            <button
+              onClick={() => { setAuthMode("signup"); setAuthError(""); }}
+              style={{
+                flex: 1, padding: "8px 0", border: "none", borderRadius: 7, cursor: "pointer",
+                background: authMode === "signup" ? "#1F4A2E" : "transparent",
+                color: authMode === "signup" ? "#FFFFFF" : "#5A7360",
+                fontWeight: 700, fontSize: 13,
+              }}
+            >
+              注册
+            </button>
+          </div>
+
+          <div style={{ marginBottom: 12 }}>
+            <input
+              type="email"
+              placeholder="邮箱"
+              value={authEmail}
+              onChange={e => setAuthEmail(e.target.value)}
+              style={{ width: "100%", border: "1px solid #A8C29A", borderRadius: 8, padding: "10px 12px", fontSize: 14, outline: "none", marginBottom: 8 }}
+            />
+            <input
+              type="password"
+              placeholder="密码"
+              value={authPassword}
+              onChange={e => setAuthPassword(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") handleAuthSubmit(); }}
+              style={{ width: "100%", border: "1px solid #A8C29A", borderRadius: 8, padding: "10px 12px", fontSize: 14, outline: "none" }}
+            />
+          </div>
+
+          {authError && (
+            <div style={{ color: authError.includes("成功") ? "#3A8C4A" : "#A8382E", fontSize: 12.5, marginBottom: 12 }}>
+              {authError}
+            </div>
+          )}
+
+          <button
+            onClick={handleAuthSubmit}
+            disabled={authBusy}
+            style={{
+              width: "100%", background: "#1F4A2E", color: "#FFFFFF", border: "none", borderRadius: 10,
+              padding: "12px 0", fontSize: 14, fontWeight: 700, cursor: authBusy ? "default" : "pointer",
+              opacity: authBusy ? 0.7 : 1,
+            }}
+          >
+            {authBusy ? "请稍候…" : (authMode === "login" ? "登录" : "注册")}
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -1338,6 +1535,25 @@ export default function MonthlyLedger() {
           <Download size={14} />
           导出 {selectedMonth} Excel 报表
         </button>
+
+        {/* Cloud sync status + account */}
+        <div style={{
+          background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none",
+          padding: "8px 16px", display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "#5A7360" }}>
+            {syncStatus === "syncing" && (<><Cloud size={13} /> 同步中…</>)}
+            {syncStatus === "synced" && (<><Cloud size={13} color="#3A8C4A" /> 已同步 · {session.user.email}</>)}
+            {syncStatus === "error" && (<><CloudOff size={13} color="#A8382E" /> 同步失败，检查网络</>)}
+            {syncStatus === "idle" && (<><Cloud size={13} /> {session.user.email}</>)}
+          </div>
+          <button
+            onClick={handleSignOut}
+            style={{ border: "none", background: "none", color: "#5A7360", cursor: "pointer", fontSize: 11.5, display: "flex", alignItems: "center", gap: 4, padding: 0 }}
+          >
+            <LogOut size={12} /> 退出登录
+          </button>
+        </div>
 
         {/* Full data backup / restore — carry all your data to a new deployment or update */}
         <div style={{
