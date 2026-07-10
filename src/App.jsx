@@ -1157,7 +1157,7 @@ export default function MonthlyLedger() {
     ];
     XLSX.utils.book_append_sheet(wb, sheetOrPlaceholder(netWorthRows, "还没有资产/负债数据"), "资产负债");
 
-    XLSX.writeFile(wb, `姚总的银行_${selectedMonth}.xlsx`);
+    XLSX.writeFile(wb, `小钱包_${selectedMonth}.xlsx`);
   }
 
   // full data backup — everything the app stores, in one JSON file, so switching to a new
@@ -1167,7 +1167,7 @@ export default function MonthlyLedger() {
 
   function exportAllDataBackup() {
     const backup = {
-      _app: "姚总的银行",
+      _app: "小钱包",
       _exportedAt: new Date().toISOString(),
       _version: 1,
       entries,
@@ -1189,7 +1189,7 @@ export default function MonthlyLedger() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `姚总的银行-备份-${todayISO()}.json`;
+    a.download = `小钱包-备份-${todayISO()}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -1289,7 +1289,7 @@ export default function MonthlyLedger() {
             <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>CHIIKAWA LEDGER</span> · 月度账本
           </div>
           <div style={{ fontWeight: 700, fontSize: 26, lineHeight: 1.3, display: "flex", alignItems: "center", gap: 8 }}>
-            姚总的银行 <span style={{ fontSize: 20 }}>⚽</span>
+            小钱包 <span style={{ fontSize: 20 }}>⚽</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14 }}>
             <button onClick={() => shiftMonth(-1)} style={navBtnStyle}>‹</button>
