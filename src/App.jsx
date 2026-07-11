@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
-import { Plus, Trash2, Wallet, TrendingUp, TrendingDown, Download, Pencil, Upload, LogOut, Cloud, CloudOff } from "lucide-react";
-import * as XLSX from "xlsx";
+import { Plus, Trash2, Wallet, TrendingUp, TrendingDown, Pencil, LogOut, Cloud, CloudOff } from "lucide-react";
 import { supabase } from "./supabaseClient";
 
 const BASE_CATEGORIES = [
@@ -233,6 +232,13 @@ export default function MonthlyLedger() {
 
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [adjustingPerson, setAdjustingPerson] = useState(null);
+
+  // search & filter for the entries list — keyword, category, and amount range
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterMinAmount, setFilterMinAmount] = useState("");
+  const [filterMaxAmount, setFilterMaxAmount] = useState("");
   const [adjustAmountInput, setAdjustAmountInput] = useState("");
 
   function addCategory(onCreated) {
@@ -387,6 +393,25 @@ export default function MonthlyLedger() {
     () => [...entries.filter(e => monthKey(e.date) === selectedMonth), ...recurringVirtualEntries].sort((a, b) => b.date.localeCompare(a.date)),
     [entries, selectedMonth, recurringVirtualEntries]
   );
+
+  // filtered view of monthEntries for the search/filter bar — totals elsewhere still use the
+  // unfiltered monthEntries, this is purely for what's displayed in the list
+  const filteredMonthEntries = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    const min = parseFloat(filterMinAmount);
+    const max = parseFloat(filterMaxAmount);
+    return monthEntries.filter(e => {
+      if (filterCategory && e.category !== filterCategory) return false;
+      if (!isNaN(min) && e.amount < min) return false;
+      if (!isNaN(max) && e.amount > max) return false;
+      if (q) {
+        const label = e.recurring ? "订阅" : (CAT_MAP[e.category]?.label || "");
+        const haystack = `${label} ${e.note || ""}`.toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [monthEntries, searchQuery, filterCategory, filterMinAmount, filterMaxAmount, CAT_MAP]);
 
   // transfers — money in/out between the user and other people, flows through cash flow.
   // moved above totalsByCategory because an outgoing transfer can optionally count as a category expense
@@ -1237,82 +1262,8 @@ export default function MonthlyLedger() {
       .filter(d => d.value > 0);
   }, [assets]);
 
-  function sheetOrPlaceholder(data, placeholderMsg) {
-    return XLSX.utils.json_to_sheet(data.length ? data : [{ 提示: placeholderMsg }]);
-  }
-
-  function exportMonthlyExcel() {
-    const wb = XLSX.utils.book_new();
-
-    // 1. expense details for the selected month
-    const expenseRows = monthEntries.map(e => ({
-      日期: e.date,
-      分类: e.recurring ? "订阅/自动扣款" : (CAT_MAP[e.category]?.label || e.category),
-      金额: e.isRefund ? -e.amount : e.amount,
-      他人分摊: e.excludedAmount || 0,
-      分摊对象: (e.splits && e.splits.length > 0) ? e.splits.map(s => `${s.person}:${s.amount}`).join("; ") : (e.splitPerson || ""),
-      计入支出: e.isRefund ? -e.amount : (e.amount - (e.excludedAmount || 0)),
-      类型: e.isRefund ? "退款" : (e.recurring ? "订阅" : "支出"),
-      信用卡: (e.cardId && cards.find(c => c.id === e.cardId)?.name) || "",
-      账户: (e.accountId && accounts.find(a => a.id === e.accountId)?.name) || "",
-      基金: (e.fundId && savingsGoals.find(g => g.id === e.fundId)?.name) || "",
-      备注: e.note || "",
-    }));
-    XLSX.utils.book_append_sheet(wb, sheetOrPlaceholder(expenseRows, "本月暂无支出记录"), "支出明细");
-
-    // 2. budget vs actual (discretionary categories only)
-    const budgetRows = BUDGET_CATEGORIES.map(c => ({
-      分类: c.label,
-      预算: budgets[c.key] || 0,
-      实际支出: totalsByCategory[c.key] || 0,
-      差额: (budgets[c.key] || 0) - (totalsByCategory[c.key] || 0),
-    }));
-    XLSX.utils.book_append_sheet(wb, sheetOrPlaceholder(budgetRows, "暂无预算数据"), "预算");
-
-    // 3. cash flow timeline
-    const cashflowRows = cashflowTimeline.map(r => ({
-      日期: r.date,
-      项目: r.label,
-      金额: r.amount,
-      累计余额: r.running,
-    }));
-    XLSX.utils.book_append_sheet(wb, sheetOrPlaceholder(cashflowRows, "本月暂无现金流记录"), "现金流");
-
-    // 4. transfers
-    const transferRows = monthTransfers.map(t => ({
-      日期: t.date,
-      方向: t.direction === "in" ? "转入" : "转出",
-      对方: t.person,
-      金额: t.amount,
-      计入支出: t.countAsExpense && t.category ? (CAT_MAP[t.category]?.label || t.category) : "否",
-      备注: t.note || "",
-    }));
-    XLSX.utils.book_append_sheet(wb, sheetOrPlaceholder(transferRows, "本月暂无转账记录"), "转账");
-
-    // 5. funds
-    const fundRows = savingsGoals.map(g => ({
-      基金名称: g.name,
-      已存: g.saved,
-      目标: g.target,
-      进度: g.target > 0 ? `${Math.round((g.saved / g.target) * 100)}%` : "",
-    }));
-    XLSX.utils.book_append_sheet(wb, sheetOrPlaceholder(fundRows, "还没有基金"), "基金");
-
-    // 6. net worth snapshot
-    const netWorthRows = [
-      ...assets.map(a => ({ 类型: "资产", 名称: a.name, 分类: ASSET_CAT_MAP[a.category]?.label || a.category, 金额: a.value })),
-      ...liabilities.map(l => ({ 类型: "负债", 名称: l.name, 分类: "", 金额: l.value })),
-      { 类型: "汇总", 名称: "净资产", 分类: "", 金额: netWorth },
-    ];
-    XLSX.utils.book_append_sheet(wb, sheetOrPlaceholder(netWorthRows, "还没有资产/负债数据"), "资产负债");
-
-    XLSX.writeFile(wb, `小钱包_${selectedMonth}.xlsx`);
-  }
-
-  // full data backup — everything the app stores, in one JSON file, so switching to a new
-  // deployment/update never means retyping all your data
-  const importFileRef = useRef(null);
-  const [importMessage, setImportMessage] = useState("");
+  // the app's data is now synced straight to the cloud (Supabase) — buildBackupObject/applyBackupData
+  // below are the shared shape used for that sync, no manual export/import file needed anymore
 
   function buildBackupObject() {
     return {
@@ -1397,35 +1348,6 @@ export default function MonthlyLedger() {
     rentByMonth, cards, startBalanceByMonth, accounts, savingsGoals, budgetsByMonth, assets,
     liabilities, splitAdjustments,
   ]);
-
-  function exportAllDataBackup() {
-    const backup = buildBackupObject();
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `小钱包-备份-${todayISO()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-
-  function importAllDataBackup(file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = JSON.parse(e.target.result);
-        applyBackupData(data);
-        setImportMessage("导入成功！数据已恢复");
-        setTimeout(() => setImportMessage(""), 4000);
-      } catch (err) {
-        setImportMessage("导入失败，文件格式不对");
-        setTimeout(() => setImportMessage(""), 4000);
-      }
-    };
-    reader.readAsText(file);
-  }
 
   if (authLoading) {
     return (
@@ -1666,19 +1588,6 @@ export default function MonthlyLedger() {
           ))}
         </div>
 
-        {/* Export report */}
-        <button
-          onClick={exportMonthlyExcel}
-          style={{
-            width: "100%", background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none",
-            padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            cursor: "pointer", fontSize: 12.5, color: "#12241A", fontWeight: 600,
-          }}
-        >
-          <Download size={14} />
-          导出 {selectedMonth} Excel 报表
-        </button>
-
         {/* Cloud sync status + account */}
         <div style={{
           background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none",
@@ -1725,55 +1634,6 @@ export default function MonthlyLedger() {
             padding: "6px 16px", fontSize: 11.5, color: "#A8382E",
           }}>
             {faceIdError}
-          </div>
-        )}
-
-        {/* Full data backup / restore — carry all your data to a new deployment or update */}
-        <div style={{
-          background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none",
-          padding: "10px 16px", display: "flex", gap: 8,
-        }}>
-          <button
-            onClick={exportAllDataBackup}
-            style={{
-              flex: 1, background: "transparent", border: "1px solid #1F4A2E", borderRadius: 8,
-              padding: "8px 0", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              cursor: "pointer", fontSize: 12.5, color: "#1F4A2E", fontWeight: 600,
-            }}
-          >
-            <Download size={13} /> 备份全部数据
-          </button>
-          <button
-            onClick={() => importFileRef.current && importFileRef.current.click()}
-            style={{
-              flex: 1, background: "transparent", border: "1px solid #1F4A2E", borderRadius: 8,
-              padding: "8px 0", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              cursor: "pointer", fontSize: 12.5, color: "#1F4A2E", fontWeight: 600,
-            }}
-          >
-            <Upload size={13} /> 恢复数据
-          </button>
-          <input
-            ref={importFileRef}
-            type="file"
-            accept="application/json"
-            style={{ display: "none" }}
-            onChange={e => {
-              const file = e.target.files && e.target.files[0];
-              if (!file) return;
-              if (window.confirm("恢复数据会覆盖当前App里的所有数据，确定要继续吗？")) {
-                importAllDataBackup(file);
-              }
-              e.target.value = "";
-            }}
-          />
-        </div>
-        {importMessage && (
-          <div style={{
-            background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none",
-            padding: "8px 16px", fontSize: 12, color: importMessage.includes("成功") ? "#3A8C4A" : "#A8382E", textAlign: "center",
-          }}>
-            {importMessage}
           </div>
         )}
 
@@ -3048,13 +2908,94 @@ export default function MonthlyLedger() {
         {activeTab === "ledger" && (
         <>
 
+        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "12px 16px" }}>
+          <div style={{ display: "flex", gap: 8, marginBottom: showFilters ? 10 : 0 }}>
+            <input
+              type="text"
+              placeholder="搜索备注 / 分类…"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              style={{ flex: 1, border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 10px", fontSize: 13, outline: "none" }}
+            />
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              style={{
+                border: `1px solid ${showFilters ? "#1F4A2E" : "#A8C29A"}`, borderRadius: 8, padding: "0 12px",
+                background: showFilters ? "#1F4A2E" : "transparent", color: showFilters ? "#FFFFFF" : "#1F4A2E",
+                cursor: "pointer", fontSize: 12.5, fontWeight: 600, flexShrink: 0,
+              }}
+            >
+              筛选
+            </button>
+          </div>
+
+          {showFilters && (
+            <div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+                <button
+                  onClick={() => setFilterCategory("")}
+                  style={{
+                    padding: "5px 11px", borderRadius: 20, fontSize: 12, cursor: "pointer",
+                    border: `1.5px solid ${!filterCategory ? "#1F4A2E" : "#A8C29A"}`,
+                    background: !filterCategory ? "#1F4A2E" : "transparent",
+                    color: !filterCategory ? "#FFFFFF" : "#1F4A2E", fontWeight: !filterCategory ? 700 : 400,
+                  }}
+                >
+                  全部分类
+                </button>
+                {CATEGORIES.map(c => (
+                  <button
+                    key={c.key}
+                    onClick={() => setFilterCategory(filterCategory === c.key ? "" : c.key)}
+                    style={{
+                      padding: "5px 11px", borderRadius: 20, fontSize: 12, cursor: "pointer",
+                      border: `1.5px solid ${filterCategory === c.key ? c.color : "#A8C29A"}`,
+                      background: filterCategory === c.key ? c.color : "transparent",
+                      color: filterCategory === c.key ? "#FFFFFF" : "#1F4A2E",
+                      fontWeight: filterCategory === c.key ? 700 : 400,
+                    }}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                <span style={{ fontSize: 11.5, color: "#5A7360", flexShrink: 0 }}>金额范围</span>
+                <input
+                  type="number"
+                  placeholder="最低"
+                  value={filterMinAmount}
+                  onChange={e => setFilterMinAmount(e.target.value)}
+                  style={{ width: 70, border: "1px solid #A8C29A", borderRadius: 8, padding: "5px 8px", fontSize: 12.5, fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
+                />
+                <span style={{ color: "#5A7360" }}>–</span>
+                <input
+                  type="number"
+                  placeholder="最高"
+                  value={filterMaxAmount}
+                  onChange={e => setFilterMaxAmount(e.target.value)}
+                  style={{ width: 70, border: "1px solid #A8C29A", borderRadius: 8, padding: "5px 8px", fontSize: 12.5, fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
+                />
+                {(filterCategory || filterMinAmount || filterMaxAmount || searchQuery) && (
+                  <button
+                    onClick={() => { setFilterCategory(""); setFilterMinAmount(""); setFilterMaxAmount(""); setSearchQuery(""); }}
+                    style={{ border: "none", background: "none", color: "#A8382E", cursor: "pointer", fontSize: 11.5, marginLeft: "auto" }}
+                  >
+                    清除筛选
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
         <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", borderRadius: "4px 4px 20px 20px", overflow: "hidden" }}>
-          {monthEntries.length === 0 ? (
+          {filteredMonthEntries.length === 0 ? (
             <div style={{ padding: "30px 18px", textAlign: "center", color: "#5A7360", fontSize: 13 }}>
-              这个月还没有记录，记下第一笔支出吧
+              {monthEntries.length === 0 ? "这个月还没有记录，记下第一笔支出吧" : "没有符合条件的记录"}
             </div>
           ) : (
-            monthEntries.map((e, idx) => (
+            filteredMonthEntries.map((e, idx) => (
               <div key={e.id} style={{
                 display: "flex", alignItems: "center", gap: 10, padding: "12px 16px",
                 borderTop: idx === 0 ? "none" : "1px dashed #D4E4C8",
