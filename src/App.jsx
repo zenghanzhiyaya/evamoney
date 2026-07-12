@@ -883,6 +883,7 @@ export default function MonthlyLedger() {
   // fund usage — "使用" a savings goal withdraws from it and syncs into the ledger as a transfer-in
   const [usageInput, setUsageInput] = useState({}); // { [goalId]: amountString }
   const [usageError, setUsageError] = useState({}); // { [goalId]: errorString }
+  const [usageTarget, setUsageTarget] = useState({}); // { [goalId]: { kind: "card"|"account", id } }
 
   function useFund(id) {
     const goal = savingsGoals.find(g => g.id === id);
@@ -896,27 +897,35 @@ export default function MonthlyLedger() {
       setUsageError(prev => ({ ...prev, [id]: "超过基金余额" }));
       return;
     }
+    const target = usageTarget[id];
+    if (!target || !target.id) {
+      setUsageError(prev => ({ ...prev, [id]: "请选择取到哪张信用卡或储蓄卡" }));
+      return;
+    }
     setUsageError(prev => ({ ...prev, [id]: "" }));
 
     const today = todayISO();
+    const targetName = target.kind === "card"
+      ? cards.find(c => c.id === target.id)?.name
+      : accounts.find(a => a.id === target.id)?.name;
+
+    // this only reduces the fund's own balance and notes which card/account received it —
+    // it does not touch entries/transfers, so it never affects the cash-flow timeline or balance
     setSavingsGoals(prev => prev.map(g => g.id === id
       ? {
           ...g,
           saved: g.saved - amt,
-          usageLog: [...(g.usageLog || []), { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), amount: amt, date: today }],
+          usageLog: [...(g.usageLog || []), {
+            id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+            amount: amt,
+            date: today,
+            targetKind: target.kind,
+            targetId: target.id,
+            targetName: targetName || "",
+          }],
         }
       : g
     ));
-
-    // sync into the ledger: money leaving the fund becomes an inflow to cash, on the current date
-    setTransfers(prev => [...prev, {
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-      direction: "in",
-      person: `基金 · ${goal.name}`,
-      amount: amt,
-      note: "基金支取",
-      date: today,
-    }]);
 
     setUsageInput(prev => ({ ...prev, [id]: "" }));
   }
@@ -3171,22 +3180,22 @@ export default function MonthlyLedger() {
         {activeTab === "assets" && (
         <>
         {/* Net worth summary */}
-        <div style={{ background: "#1F4A2E", color: "#DCE8D2", padding: "18px 20px", borderTop: "none", position: "relative", overflow: "hidden" }}>
-          <div style={{ position: "absolute", top: -14, right: -6, fontSize: 70, opacity: 0.12, transform: "rotate(15deg)" }}>⚽</div>
-          <div style={{ fontSize: 11, letterSpacing: 2, opacity: 0.6, marginBottom: 8 }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", color: "#12241A", padding: "18px 20px", borderTop: "none", position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: -14, right: -6, fontSize: 70, opacity: 0.08, transform: "rotate(15deg)" }}>⚽</div>
+          <div style={{ fontSize: 11, letterSpacing: 2, opacity: 0.6, marginBottom: 8, color: "#5A7360" }}>
             净资产 <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>NET WORTH</span>
           </div>
-          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: 26 }}>
+          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: 26, color: "#1F4A2E" }}>
             ${formatMoney(netWorth)}
           </div>
           <div style={{ display: "flex", gap: 20, marginTop: 12, fontSize: 12 }}>
             <div>
-              <div style={{ opacity: 0.6, marginBottom: 2 }}>总资产</div>
-              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 600, color: "#A8C9A0" }}>${formatMoney(totalAssets)}</div>
+              <div style={{ opacity: 0.6, marginBottom: 2, color: "#5A7360" }}>总资产</div>
+              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 600, color: "#3A8C4A" }}>${formatMoney(totalAssets)}</div>
             </div>
             <div>
-              <div style={{ opacity: 0.6, marginBottom: 2 }}>总负债</div>
-              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 600, color: "#B8912E" }}>${formatMoney(totalLiabilities)}</div>
+              <div style={{ opacity: 0.6, marginBottom: 2, color: "#5A7360" }}>总负债</div>
+              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 600, color: "#A8382E" }}>${formatMoney(totalLiabilities)}</div>
             </div>
           </div>
         </div>
@@ -3357,12 +3366,12 @@ export default function MonthlyLedger() {
         {activeTab === "funds" && (
         <>
         {/* Fund total summary */}
-        <div style={{ background: "#1F4A2E", color: "#DCE8D2", padding: "18px 20px", borderTop: "none", position: "relative", overflow: "hidden" }}>
-          <div style={{ position: "absolute", top: -14, right: -6, fontSize: 70, opacity: 0.12, transform: "rotate(15deg)" }}>⚽</div>
-          <div style={{ fontSize: 11, letterSpacing: 2, opacity: 0.6, marginBottom: 8 }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", color: "#12241A", padding: "18px 20px", borderTop: "none", position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: -14, right: -6, fontSize: 70, opacity: 0.08, transform: "rotate(15deg)" }}>⚽</div>
+          <div style={{ fontSize: 11, letterSpacing: 2, opacity: 0.6, marginBottom: 8, color: "#5A7360" }}>
             基金总额
           </div>
-          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: 26 }}>
+          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: 26, color: "#1F4A2E" }}>
             ${formatMoney(totalSaved)}
           </div>
         </div>
@@ -3412,7 +3421,7 @@ export default function MonthlyLedger() {
                   </button>
                 </div>
 
-                <div style={{ display: "flex", gap: 6 }}>
+                <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
                   <input
                     type="number"
                     placeholder="使用金额"
@@ -3427,9 +3436,51 @@ export default function MonthlyLedger() {
                     使用
                   </button>
                 </div>
+
+                {(cards.length > 0 || accounts.length > 0) && (
+                  <div style={{ marginBottom: 6 }}>
+                    <div style={{ fontSize: 10.5, color: "#5A7360", marginBottom: 4 }}>取到哪张卡/账户（仅作记录，不影响现金流）</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                      {cards.map(c => {
+                        const selected = usageTarget[g.id]?.kind === "card" && usageTarget[g.id]?.id === c.id;
+                        return (
+                          <button
+                            key={c.id}
+                            onClick={() => setUsageTarget(prev => ({ ...prev, [g.id]: selected ? null : { kind: "card", id: c.id } }))}
+                            style={{
+                              padding: "4px 10px", borderRadius: 20, fontSize: 11.5, cursor: "pointer",
+                              border: `1.5px solid ${selected ? "#B8912E" : "#A8C29A"}`,
+                              background: selected ? "#B8912E" : "transparent",
+                              color: selected ? "#FFFFFF" : "#1F4A2E", fontWeight: selected ? 700 : 400,
+                            }}
+                          >
+                            {c.name}
+                          </button>
+                        );
+                      })}
+                      {accounts.map(a => {
+                        const selected = usageTarget[g.id]?.kind === "account" && usageTarget[g.id]?.id === a.id;
+                        return (
+                          <button
+                            key={a.id}
+                            onClick={() => setUsageTarget(prev => ({ ...prev, [g.id]: selected ? null : { kind: "account", id: a.id } }))}
+                            style={{
+                              padding: "4px 10px", borderRadius: 20, fontSize: 11.5, cursor: "pointer",
+                              border: `1.5px solid ${selected ? "#3A8C4A" : "#A8C29A"}`,
+                              background: selected ? "#3A8C4A" : "transparent",
+                              color: selected ? "#FFFFFF" : "#1F4A2E", fontWeight: selected ? 700 : 400,
+                            }}
+                          >
+                            {a.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 {usageError[g.id] && <div style={{ color: "#A8382E", fontSize: 11, marginTop: 5 }}>{usageError[g.id]}</div>}
                 <div style={{ fontSize: 10.5, color: "#5A7360", marginTop: 4 }}>
-                  使用后会自动作为转入记录同步到"记账"的转账与现金流里
+                  使用只会扣减基金余额，不会影响"记账"的现金流和转账
                 </div>
 
                 {log.length > 0 && (
@@ -3437,7 +3488,9 @@ export default function MonthlyLedger() {
                     <div style={{ fontSize: 10.5, color: "#5A7360", marginBottom: 4 }}>使用记录</div>
                     {log.slice(0, 5).map(u => (
                       <div key={u.id} style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "#12241A", padding: "2px 0" }}>
-                        <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{u.date}</span>
+                        <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                          {u.date}{u.targetName && <span style={{ color: "#5A7360" }}> · {u.targetName}</span>}
+                        </span>
                         <span style={{ fontFamily: "'JetBrains Mono', monospace", color: "#B8912E", fontWeight: 600 }}>-${formatMoney(u.amount)}</span>
                       </div>
                     ))}
