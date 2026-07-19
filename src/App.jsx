@@ -4,14 +4,14 @@ import { Plus, Trash2, Wallet, TrendingUp, TrendingDown, Pencil, LogOut, Cloud, 
 import { supabase } from "./supabaseClient";
 
 const BASE_CATEGORIES = [
-  { key: "food", label: "餐饮", color: "#A8382E" },
-  { key: "transport", label: "交通", color: "#4A3C2E" },
-  { key: "entertainment", label: "娱乐", color: "#12241A" },
-  { key: "rent", label: "水电", color: "#1F4A2E" },
-  { key: "shopping", label: "购物", color: "#B8912E" },
-  { key: "subscription", label: "订阅", color: "#4F8577" },
-  { key: "misc", label: "杂项", color: "#7A5C42" },
-  { key: "fund", label: "基金", color: "#6B4F7A" },
+  { key: "food", label: "餐饮", color: "#B8574A" },
+  { key: "transport", label: "交通", color: "#6B5245" },
+  { key: "entertainment", label: "娱乐", color: "#5C3E3E" },
+  { key: "rent", label: "水电", color: "#A37070" },
+  { key: "shopping", label: "购物", color: "#B89968" },
+  { key: "subscription", label: "订阅", color: "#B08999" },
+  { key: "misc", label: "杂项", color: "#A88060" },
+  { key: "fund", label: "基金", color: "#7A5C74" },
 ];
 
 // colors auto-assigned to custom categories as they're added, cycling through the palette
@@ -20,11 +20,11 @@ const CUSTOM_CATEGORY_PALETTE = [
 ];
 
 const ASSET_CATEGORIES = [
-  { key: "cash", label: "现金", color: "#3A8C4A" },
-  { key: "deposit", label: "存款", color: "#4F8577" },
-  { key: "investment", label: "投资", color: "#B8912E" },
-  { key: "property", label: "房产", color: "#1F4A2E" },
-  { key: "other", label: "其他", color: "#7A5C42" },
+  { key: "cash", label: "现金", color: "#7A9670" },
+  { key: "deposit", label: "存款", color: "#B08999" },
+  { key: "investment", label: "投资", color: "#B89968" },
+  { key: "property", label: "房产", color: "#A37070" },
+  { key: "other", label: "其他", color: "#A88060" },
 ];
 const ASSET_CAT_MAP = Object.fromEntries(ASSET_CATEGORIES.map(c => [c.key, c]));
 
@@ -1064,7 +1064,7 @@ export default function MonthlyLedger() {
         value: c.key === "subscription" ? (totalsByCategory[c.key] || 0) + recurringTotal : totalsByCategory[c.key],
         color: c.color,
       })),
-    { name: "房租", value: rent.amount || 0, color: "#1F4A2E" },
+    { name: "房租", value: rent.amount || 0, color: "#A37070" },
   ].filter(d => d.value > 0);
 
   function addEntry() {
@@ -1422,9 +1422,9 @@ export default function MonthlyLedger() {
     return (
       <div style={{
         minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
-        background: "#DCE8D2", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif",
+        background: "#F3E8DC", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif",
       }}>
-        <div style={{ color: "#1F4A2E", fontSize: 14 }}>加载中…</div>
+        <div style={{ color: "#A37070", fontSize: 14 }}>加载中…</div>
       </div>
     );
   }
@@ -1433,28 +1433,28 @@ export default function MonthlyLedger() {
     return (
       <div style={{
         minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
-        background: "#DCE8D2", padding: 24,
+        background: "#F3E8DC", padding: 24,
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif",
       }}>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap" />
         <div style={{
           width: "100%", maxWidth: 360, background: "#FFFFFF", borderRadius: 20, padding: 28,
-          boxShadow: "0 8px 28px rgba(31,74,46,0.18)",
+          boxShadow: "0 8px 28px rgba(163,112,112,0.18)",
         }}>
-          <div style={{ fontSize: 22, fontWeight: 700, color: "#1F4A2E", marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ fontSize: 22, fontWeight: 700, color: "#A37070", marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
             小钱包 <span style={{ fontSize: 18 }}>⚽</span>
           </div>
-          <div style={{ fontSize: 12.5, color: "#5A7360", marginBottom: 20 }}>
+          <div style={{ fontSize: 12.5, color: "#9C8478", marginBottom: 20 }}>
             登录后，你的数据会在所有设备间自动同步
           </div>
 
-          <div style={{ display: "flex", gap: 4, marginBottom: 16, background: "#DCE8D2", borderRadius: 10, padding: 4 }}>
+          <div style={{ display: "flex", gap: 4, marginBottom: 16, background: "#F3E8DC", borderRadius: 10, padding: 4 }}>
             <button
               onClick={() => { setAuthMode("login"); setAuthError(""); }}
               style={{
                 flex: 1, padding: "8px 0", border: "none", borderRadius: 7, cursor: "pointer",
-                background: authMode === "login" ? "#1F4A2E" : "transparent",
-                color: authMode === "login" ? "#FFFFFF" : "#5A7360",
+                background: authMode === "login" ? "#A37070" : "transparent",
+                color: authMode === "login" ? "#FFFFFF" : "#9C8478",
                 fontWeight: 700, fontSize: 13,
               }}
             >
@@ -1464,8 +1464,8 @@ export default function MonthlyLedger() {
               onClick={() => { setAuthMode("signup"); setAuthError(""); }}
               style={{
                 flex: 1, padding: "8px 0", border: "none", borderRadius: 7, cursor: "pointer",
-                background: authMode === "signup" ? "#1F4A2E" : "transparent",
-                color: authMode === "signup" ? "#FFFFFF" : "#5A7360",
+                background: authMode === "signup" ? "#A37070" : "transparent",
+                color: authMode === "signup" ? "#FFFFFF" : "#9C8478",
                 fontWeight: 700, fontSize: 13,
               }}
             >
@@ -1479,7 +1479,7 @@ export default function MonthlyLedger() {
               placeholder="邮箱"
               value={authEmail}
               onChange={e => setAuthEmail(e.target.value)}
-              style={{ width: "100%", border: "1px solid #A8C29A", borderRadius: 8, padding: "10px 12px", fontSize: 14, outline: "none", marginBottom: 8 }}
+              style={{ width: "100%", border: "1px solid #DDC6BC", borderRadius: 8, padding: "10px 12px", fontSize: 14, outline: "none", marginBottom: 8 }}
             />
             <input
               type="password"
@@ -1487,12 +1487,12 @@ export default function MonthlyLedger() {
               value={authPassword}
               onChange={e => setAuthPassword(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") handleAuthSubmit(); }}
-              style={{ width: "100%", border: "1px solid #A8C29A", borderRadius: 8, padding: "10px 12px", fontSize: 14, outline: "none" }}
+              style={{ width: "100%", border: "1px solid #DDC6BC", borderRadius: 8, padding: "10px 12px", fontSize: 14, outline: "none" }}
             />
           </div>
 
           {authError && (
-            <div style={{ color: authError.includes("成功") ? "#3A8C4A" : "#A8382E", fontSize: 12.5, marginBottom: 12 }}>
+            <div style={{ color: authError.includes("成功") ? "#7A9670" : "#B8574A", fontSize: 12.5, marginBottom: 12 }}>
               {authError}
             </div>
           )}
@@ -1501,7 +1501,7 @@ export default function MonthlyLedger() {
             onClick={handleAuthSubmit}
             disabled={authBusy}
             style={{
-              width: "100%", background: "#1F4A2E", color: "#FFFFFF", border: "none", borderRadius: 10,
+              width: "100%", background: "#A37070", color: "#FFFFFF", border: "none", borderRadius: 10,
               padding: "12px 0", fontSize: 14, fontWeight: 700, cursor: authBusy ? "default" : "pointer",
               opacity: authBusy ? 0.7 : 1,
             }}
@@ -1517,28 +1517,28 @@ export default function MonthlyLedger() {
     return (
       <div style={{
         minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
-        background: "#DCE8D2", padding: 24,
+        background: "#F3E8DC", padding: 24,
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif",
       }}>
         <div style={{
           width: "100%", maxWidth: 340, background: "#FFFFFF", borderRadius: 20, padding: 32,
-          boxShadow: "0 8px 28px rgba(31,74,46,0.18)", textAlign: "center",
+          boxShadow: "0 8px 28px rgba(163,112,112,0.18)", textAlign: "center",
         }}>
           <div style={{ fontSize: 44, marginBottom: 12 }}>🔒</div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: "#1F4A2E", marginBottom: 6 }}>
+          <div style={{ fontSize: 17, fontWeight: 700, color: "#A37070", marginBottom: 6 }}>
             小钱包已锁定
           </div>
-          <div style={{ fontSize: 12.5, color: "#5A7360", marginBottom: 20 }}>
+          <div style={{ fontSize: 12.5, color: "#9C8478", marginBottom: 20 }}>
             用面容/指纹解锁继续使用
           </div>
           {faceIdError && (
-            <div style={{ color: "#A8382E", fontSize: 12.5, marginBottom: 12 }}>{faceIdError}</div>
+            <div style={{ color: "#B8574A", fontSize: 12.5, marginBottom: 12 }}>{faceIdError}</div>
           )}
           <button
             onClick={unlockWithFaceId}
             disabled={faceIdBusy}
             style={{
-              width: "100%", background: "#1F4A2E", color: "#FFFFFF", border: "none", borderRadius: 10,
+              width: "100%", background: "#A37070", color: "#FFFFFF", border: "none", borderRadius: 10,
               padding: "12px 0", fontSize: 14, fontWeight: 700, cursor: faceIdBusy ? "default" : "pointer",
               opacity: faceIdBusy ? 0.7 : 1,
             }}
@@ -1547,7 +1547,7 @@ export default function MonthlyLedger() {
           </button>
           <button
             onClick={handleSignOut}
-            style={{ border: "none", background: "none", color: "#5A7360", cursor: "pointer", fontSize: 12, marginTop: 14, padding: 0 }}
+            style={{ border: "none", background: "none", color: "#9C8478", cursor: "pointer", fontSize: 12, marginTop: 14, padding: 0 }}
           >
             退出登录
           </button>
@@ -1559,11 +1559,11 @@ export default function MonthlyLedger() {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "#DCE8D2",
+      background: "#F3E8DC",
       backgroundImage:
-        "repeating-linear-gradient(0deg, rgba(31,74,46,0.035) 0px, rgba(31,74,46,0.035) 1px, transparent 1px, transparent 28px)",
+        "repeating-linear-gradient(0deg, rgba(163,112,112,0.035) 0px, rgba(163,112,112,0.035) 1px, transparent 1px, transparent 28px)",
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif",
-      color: "#1F4A2E",
+      color: "#A37070",
       padding: "24px 16px 60px",
     }}>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap" />
@@ -1581,24 +1581,24 @@ export default function MonthlyLedger() {
           transition: border-color 0.15s ease, box-shadow 0.15s ease;
         }
         input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus, input[type="month"]:focus {
-          border-color: #1F4A2E !important;
-          box-shadow: 0 0 0 3px rgba(31,74,46,0.14);
+          border-color: #A37070 !important;
+          box-shadow: 0 0 0 3px rgba(163,112,112,0.14);
         }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-thumb { background: #A8C29A; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #DDC6BC; border-radius: 4px; }
       `}</style>
 
-      <div style={{ maxWidth: 480, margin: "0 auto", boxShadow: "0 6px 28px rgba(31,74,46,0.14)", borderRadius: 10 }}>
+      <div style={{ maxWidth: 480, margin: "0 auto", boxShadow: "0 6px 28px rgba(163,112,112,0.14)", borderRadius: 10 }}>
 
         {/* Header - chiikawa cover */}
         <div style={{
-          background: "linear-gradient(135deg, #1F4A2E 0%, #0F2E1A 100%)",
-          color: "#DCE8D2",
+          background: "linear-gradient(135deg, #A37070 0%, #8A5A5A 100%)",
+          color: "#F3E8DC",
           borderRadius: "20px 20px 6px 6px",
           padding: "22px 20px",
           position: "relative",
           overflow: "hidden",
-          boxShadow: "0 8px 20px -8px rgba(31,74,46,0.5)",
+          boxShadow: "0 8px 20px -8px rgba(163,112,112,0.5)",
         }}>
           {/* mascot watermark */}
           <div style={{
@@ -1632,7 +1632,7 @@ export default function MonthlyLedger() {
         </div>
 
         {/* Tab navigation */}
-        <div style={{ display: "flex", flexWrap: "wrap", background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: 4, gap: 4 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none", padding: 4, gap: 4 }}>
           {[
             { key: "quickadd", label: "记一笔" },
             { key: "ledger", label: "账本" },
@@ -1646,9 +1646,9 @@ export default function MonthlyLedger() {
               style={{
                 flex: "1 1 auto", minWidth: 62, padding: "9px 0", border: "none", cursor: "pointer", borderRadius: 12,
                 fontSize: 13, fontWeight: activeTab === t.key ? 700 : 500,
-                color: activeTab === t.key ? "#FFFFFF" : "#5A7360",
-                background: activeTab === t.key ? "#1F4A2E" : "transparent",
-                boxShadow: activeTab === t.key ? "0 2px 6px rgba(31,74,46,0.35)" : "none",
+                color: activeTab === t.key ? "#FFFFFF" : "#9C8478",
+                background: activeTab === t.key ? "#A37070" : "transparent",
+                boxShadow: activeTab === t.key ? "0 2px 6px rgba(163,112,112,0.35)" : "none",
                 transition: "all 0.18s ease",
               }}
             >
@@ -1659,18 +1659,18 @@ export default function MonthlyLedger() {
 
         {/* Cloud sync status + account */}
         <div style={{
-          background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none",
+          background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none",
           padding: "8px 16px", display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "#5A7360" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "#9C8478" }}>
             {syncStatus === "syncing" && (<><Cloud size={13} /> 同步中…</>)}
-            {syncStatus === "synced" && (<><Cloud size={13} color="#3A8C4A" /> 已同步 · {session.user.email}</>)}
-            {syncStatus === "error" && (<><CloudOff size={13} color="#A8382E" /> 同步失败，检查网络</>)}
+            {syncStatus === "synced" && (<><Cloud size={13} color="#7A9670" /> 已同步 · {session.user.email}</>)}
+            {syncStatus === "error" && (<><CloudOff size={13} color="#B8574A" /> 同步失败，检查网络</>)}
             {syncStatus === "idle" && (<><Cloud size={13} /> {session.user.email}</>)}
           </div>
           <button
             onClick={handleSignOut}
-            style={{ border: "none", background: "none", color: "#5A7360", cursor: "pointer", fontSize: 11.5, display: "flex", alignItems: "center", gap: 4, padding: 0 }}
+            style={{ border: "none", background: "none", color: "#9C8478", cursor: "pointer", fontSize: 11.5, display: "flex", alignItems: "center", gap: 4, padding: 0 }}
           >
             <LogOut size={12} /> 退出登录
           </button>
@@ -1678,18 +1678,18 @@ export default function MonthlyLedger() {
 
         {faceIdSupported && (
           <div style={{
-            background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none",
+            background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none",
             padding: "8px 16px", display: "flex", alignItems: "center", justifyContent: "space-between",
           }}>
-            <div style={{ fontSize: 11.5, color: "#5A7360" }}>
+            <div style={{ fontSize: 11.5, color: "#9C8478" }}>
               面容 / 指纹解锁{faceIdEnabled ? "已开启" : "（打开 App 时需要验证）"}
             </div>
             <button
               onClick={faceIdEnabled ? disableFaceId : enableFaceId}
               disabled={faceIdBusy}
               style={{
-                border: "1px solid #1F4A2E", background: faceIdEnabled ? "#1F4A2E" : "transparent",
-                color: faceIdEnabled ? "#FFFFFF" : "#1F4A2E", borderRadius: 20, padding: "4px 12px",
+                border: "1px solid #A37070", background: faceIdEnabled ? "#A37070" : "transparent",
+                color: faceIdEnabled ? "#FFFFFF" : "#A37070", borderRadius: 20, padding: "4px 12px",
                 cursor: "pointer", fontSize: 11, fontWeight: 600,
               }}
             >
@@ -1699,8 +1699,8 @@ export default function MonthlyLedger() {
         )}
         {faceIdError && !faceIdLocked && (
           <div style={{
-            background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none",
-            padding: "6px 16px", fontSize: 11.5, color: "#A8382E",
+            background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none",
+            padding: "6px 16px", fontSize: 11.5, color: "#B8574A",
           }}>
             {faceIdError}
           </div>
@@ -1710,16 +1710,16 @@ export default function MonthlyLedger() {
         <>
 
         {/* Income — freely add any number of income entries */}
-        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "16px 18px" }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none", padding: "16px 18px" }}>
           <div
             onClick={() => toggleSection("income")}
             style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: collapsedSections.income ? 0 : 10, cursor: "pointer" }}
           >
-            <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 10, color: "#5A7360" }}>{collapsedSections.income ? "▸" : "▾"}</span>
+            <div style={{ fontSize: 12.5, color: "#5C3E3E", letterSpacing: 1, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 10, color: "#9C8478" }}>{collapsedSections.income ? "▸" : "▾"}</span>
               <Wallet size={14} /> 本月收入
             </div>
-            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, color: "#3A8C4A" }}>
+            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, color: "#7A9670" }}>
               ${formatMoney(monthlyIncome)}
             </div>
           </div>
@@ -1731,19 +1731,19 @@ export default function MonthlyLedger() {
               {monthIncomeEntries.map(inc => (
                 <div key={inc.id} style={{
                   display: "flex", alignItems: "center", gap: 8, padding: "8px 10px",
-                  border: "1px solid #D4E4C8", borderRadius: 8, marginBottom: 6, background: "#E4EEDC",
+                  border: "1px solid #EDE0D2", borderRadius: 8, marginBottom: 6, background: "#F7EFE5",
                 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#3A8C4A", flexShrink: 0 }} />
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#7A9670", flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {inc.note || "收入"}
                     </div>
-                    <div style={{ fontSize: 11, color: "#5A7360", fontFamily: "'JetBrains Mono', monospace" }}>{inc.date}</div>
+                    <div style={{ fontSize: 11, color: "#9C8478", fontFamily: "'JetBrains Mono', monospace" }}>{inc.date}</div>
                   </div>
-                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, color: "#3A8C4A", flexShrink: 0 }}>
+                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, color: "#7A9670", flexShrink: 0 }}>
                     +${formatMoney(inc.amount)}
                   </div>
-                  <button onClick={() => removeIncome(inc.id)} style={{ border: "none", background: "none", color: "#A8C29A", cursor: "pointer", padding: 2, flexShrink: 0 }}>
+                  <button onClick={() => removeIncome(inc.id)} style={{ border: "none", background: "none", color: "#DDC6BC", cursor: "pointer", padding: 2, flexShrink: 0 }}>
                     <Trash2 size={13} />
                   </button>
                 </div>
@@ -1752,8 +1752,8 @@ export default function MonthlyLedger() {
           )}
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", flex: "0 0 100px", border: "1px solid #A8C29A", borderRadius: 8, padding: "8px 10px" }}>
-              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, marginRight: 4, color: "#12241A" }}>$</span>
+            <div style={{ display: "flex", alignItems: "center", flex: "0 0 100px", border: "1px solid #DDC6BC", borderRadius: 8, padding: "8px 10px" }}>
+              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, marginRight: 4, color: "#5C3E3E" }}>$</span>
               <input
                 type="number"
                 placeholder="金额"
@@ -1766,51 +1766,51 @@ export default function MonthlyLedger() {
               type="date"
               value={incomeForm.date}
               onChange={e => setIncomeForm({ ...incomeForm, date: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "8px 10px", fontSize: 13, flex: "0 0 130px", fontFamily: "'JetBrains Mono', monospace", color: "#12241A" }}
+              style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "8px 10px", fontSize: 13, flex: "0 0 130px", fontFamily: "'JetBrains Mono', monospace", color: "#5C3E3E" }}
             />
             <input
               type="text"
               placeholder="备注，如 工资/奖金/兼职（可选）"
               value={incomeForm.note}
               onChange={e => setIncomeForm({ ...incomeForm, note: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "8px 10px", fontSize: 13, flex: 1, outline: "none" }}
+              style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "8px 10px", fontSize: 13, flex: 1, outline: "none" }}
             />
             <button
               onClick={addIncome}
               style={{
-                background: "#3A8C4A", color: "#FFFFFF", border: "none", borderRadius: 8,
+                background: "#7A9670", color: "#FFFFFF", border: "none", borderRadius: 8,
                 padding: "0 14px", display: "flex", alignItems: "center", gap: 5, cursor: "pointer", fontSize: 13, fontWeight: 700,
-                boxShadow: "0 2px 6px rgba(58,140,74,0.4)",
+                boxShadow: "0 2px 6px rgba(122,150,112,0.4)",
               }}
             >
               <Plus size={14} /> 添加
             </button>
           </div>
-          {incomeError && <div style={{ color: "#A8382E", fontSize: 12 }}>{incomeError}</div>}
+          {incomeError && <div style={{ color: "#B8574A", fontSize: 12 }}>{incomeError}</div>}
           </>
           )}
         </div>
 
         {/* Rent setup — varies month to month; editing only changes the selected month */}
-        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "14px 18px" }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none", padding: "14px 18px" }}>
           <div
             onClick={() => toggleSection("rent")}
             style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, cursor: "pointer" }}
           >
             <div>
-              <div style={{ fontSize: 13, color: "#12241A", display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: 10, color: "#5A7360" }}>{collapsedSections.rent ? "▸" : "▾"}</span>
+              <div style={{ fontSize: 13, color: "#5C3E3E", display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 10, color: "#9C8478" }}>{collapsedSections.rent ? "▸" : "▾"}</span>
                 <Wallet size={14} />
                 房租（{selectedMonth}，走现金流）
               </div>
               {!collapsedSections.rent && (
-                <div style={{ fontSize: 10.5, color: "#5A7360", marginTop: 2 }}>
+                <div style={{ fontSize: 10.5, color: "#9C8478", marginTop: 2 }}>
                   每月单独填写，不影响其他月份
                 </div>
               )}
             </div>
             {collapsedSections.rent && rent.amount && (
-              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, color: "#1F4A2E" }}>
+              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, color: "#A37070" }}>
                 ${formatMoney(rent.amount)}
               </div>
             )}
@@ -1825,11 +1825,11 @@ export default function MonthlyLedger() {
                   value={rent.day ?? ""}
                   onChange={e => updateRent("day", e.target.value === "" ? null : parseInt(e.target.value, 10))}
                   style={{
-                    width: 44, border: "none", borderBottom: "1px solid #A8C29A", background: "transparent",
+                    width: 44, border: "none", borderBottom: "1px solid #DDC6BC", background: "transparent",
                     fontFamily: "'JetBrains Mono', monospace", fontSize: 14, textAlign: "right", outline: "none", padding: "2px 0",
                   }}
                 />
-                <span style={{ fontSize: 12, color: "#12241A" }}>日</span>
+                <span style={{ fontSize: 12, color: "#5C3E3E" }}>日</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                 <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13 }}>$</span>
@@ -1839,7 +1839,7 @@ export default function MonthlyLedger() {
                   value={rent.amount ?? ""}
                   onChange={e => updateRent("amount", e.target.value === "" ? null : parseFloat(e.target.value))}
                   style={{
-                    width: 90, border: "none", borderBottom: "1px solid #A8C29A", background: "transparent",
+                    width: 90, border: "none", borderBottom: "1px solid #DDC6BC", background: "transparent",
                     fontFamily: "'JetBrains Mono', monospace", fontSize: 14, textAlign: "right", outline: "none", padding: "2px 0",
                   }}
                 />
@@ -1850,16 +1850,16 @@ export default function MonthlyLedger() {
 
         {/* Summary strip - stamped ledger balance */}
         <div style={{
-          background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none",
+          background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none",
           padding: "18px 18px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12,
         }}>
-          <SummaryCell icon={<TrendingUp size={13} />} label="本月收入" value={monthlyIncome} tone="#3A8C4A" />
-          <SummaryCell icon={<TrendingDown size={13} />} label="本月支出" value={totalSpent} tone="#A8382E" />
-          <div style={{ gridColumn: "1 / -1", borderTop: "1px dashed #A8C29A", paddingTop: 12, display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <span style={{ fontSize: 12, color: "#12241A", letterSpacing: 1 }}>结余 BALANCE</span>
+          <SummaryCell icon={<TrendingUp size={13} />} label="本月收入" value={monthlyIncome} tone="#7A9670" />
+          <SummaryCell icon={<TrendingDown size={13} />} label="本月支出" value={totalSpent} tone="#B8574A" />
+          <div style={{ gridColumn: "1 / -1", borderTop: "1px dashed #DDC6BC", paddingTop: 12, display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <span style={{ fontSize: 12, color: "#5C3E3E", letterSpacing: 1 }}>结余 BALANCE</span>
             <span style={{
               fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: 22,
-              color: balance >= 0 ? "#1F4A2E" : "#A8382E",
+              color: balance >= 0 ? "#A37070" : "#B8574A",
             }}>
               {balance >= 0 ? "" : "-"}${formatMoney(Math.abs(balance))}
             </span>
@@ -1868,12 +1868,12 @@ export default function MonthlyLedger() {
 
         {/* Chart */}
         {pieData.length > 0 && (
-          <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: collapsedSections.chart ? "10px 16px" : "10px 8px 4px" }}>
+          <div style={{ background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none", padding: collapsedSections.chart ? "10px 16px" : "10px 8px 4px" }}>
             <div
               onClick={() => toggleSection("chart")}
-              style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", padding: collapsedSections.chart ? 0 : "0 8px", fontSize: 12.5, color: "#12241A", fontWeight: 700, letterSpacing: 1 }}
+              style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", padding: collapsedSections.chart ? 0 : "0 8px", fontSize: 12.5, color: "#5C3E3E", fontWeight: 700, letterSpacing: 1 }}
             >
-              <span style={{ fontSize: 10, color: "#5A7360" }}>{collapsedSections.chart ? "▸" : "▾"}</span>
+              <span style={{ fontSize: 10, color: "#9C8478" }}>{collapsedSections.chart ? "▸" : "▾"}</span>
               支出分布
             </div>
             {!collapsedSections.chart && (
@@ -1890,7 +1890,7 @@ export default function MonthlyLedger() {
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", justifyContent: "center", paddingBottom: 10, fontSize: 12 }}>
                   {pieData.map(d => (
-                    <div key={d.name} style={{ display: "flex", alignItems: "center", gap: 5, color: "#12241A" }}>
+                    <div key={d.name} style={{ display: "flex", alignItems: "center", gap: 5, color: "#5C3E3E" }}>
                       <span style={{ width: 8, height: 8, borderRadius: 2, background: d.color, display: "inline-block" }} />
                       {d.name} ${formatMoney(d.value)}
                     </div>
@@ -1902,17 +1902,17 @@ export default function MonthlyLedger() {
         )}
 
         {/* Budget planning — synced with the ledger's category spending for the selected month */}
-        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "16px 18px" }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none", padding: "16px 18px" }}>
           <div
             onClick={() => toggleSection("budget")}
             style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: collapsedSections.budget ? 0 : 4, cursor: "pointer" }}
           >
-            <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 10, color: "#5A7360" }}>{collapsedSections.budget ? "▸" : "▾"}</span>
+            <div style={{ fontSize: 12.5, color: "#5C3E3E", letterSpacing: 1, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 10, color: "#9C8478" }}>{collapsedSections.budget ? "▸" : "▾"}</span>
               预算 · {selectedMonth}
             </div>
             {totalBudget > 0 && (
-              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12.5, color: "#12241A" }}>
+              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12.5, color: "#5C3E3E" }}>
                 ${formatMoney(budgetableSpent)} / ${formatMoney(totalBudget)}
               </div>
             )}
@@ -1921,7 +1921,7 @@ export default function MonthlyLedger() {
           {!collapsedSections.budget && (
           <>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8, flexWrap: "wrap" }}>
-            <div style={{ fontSize: 11, color: "#5A7360" }}>
+            <div style={{ fontSize: 11, color: "#9C8478" }}>
               {hasPrevMonthData
                 ? `根据 ${prevMonthKey} 的支出生成下个月预算`
                 : `${prevMonthKey} 暂无支出记录，可手动填写预算`}
@@ -1930,8 +1930,8 @@ export default function MonthlyLedger() {
               onClick={generateBudgetFromPrevMonth}
               disabled={!hasPrevMonthData}
               style={{
-                background: hasPrevMonthData ? "#1F4A2E" : "#D4E4C8",
-                color: hasPrevMonthData ? "#DCE8D2" : "#A8C29A",
+                background: hasPrevMonthData ? "#A37070" : "#EDE0D2",
+                color: hasPrevMonthData ? "#F3E8DC" : "#DDC6BC",
                 border: "none", borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600,
                 cursor: hasPrevMonthData ? "pointer" : "not-allowed", flexShrink: 0,
               }}
@@ -1940,7 +1940,7 @@ export default function MonthlyLedger() {
             </button>
           </div>
 
-          <div style={{ fontSize: 10.5, color: "#5A7360", marginBottom: 10 }}>
+          <div style={{ fontSize: 10.5, color: "#9C8478", marginBottom: 10 }}>
             订阅、基金、水电有各自的管理页面，不计入这里的预算
           </div>
 
@@ -1949,7 +1949,7 @@ export default function MonthlyLedger() {
             const budget = budgets[c.key] || 0;
             const pct = budget > 0 ? Math.max(0, Math.min(100, (spent / budget) * 100)) : 0;
             const over = budget > 0 && spent > budget;
-            const barColor = over ? "#A8382E" : pct >= 80 ? "#B8912E" : "#3A8C4A";
+            const barColor = over ? "#B8574A" : pct >= 80 ? "#B89968" : "#7A9670";
             return (
               <div key={c.key} style={{ marginBottom: 12 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
@@ -1958,10 +1958,10 @@ export default function MonthlyLedger() {
                     {c.label}
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
-                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: over ? "#A8382E" : "#1F4A2E", fontWeight: 600 }}>
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: over ? "#B8574A" : "#A37070", fontWeight: 600 }}>
                       ${formatMoney(spent)}
                     </span>
-                    <span style={{ fontSize: 11, color: "#5A7360" }}>/</span>
+                    <span style={{ fontSize: 11, color: "#9C8478" }}>/</span>
                     <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12 }}>$</span>
                     <input
                       type="number"
@@ -1969,17 +1969,17 @@ export default function MonthlyLedger() {
                       value={budgets[c.key] ?? ""}
                       onChange={e => updateBudget(c.key, e.target.value)}
                       style={{
-                        width: 56, border: "none", borderBottom: "1px solid #A8C29A", background: "transparent",
+                        width: 56, border: "none", borderBottom: "1px solid #DDC6BC", background: "transparent",
                         fontFamily: "'JetBrains Mono', monospace", fontSize: 12, textAlign: "right", outline: "none", padding: "1px 0",
                       }}
                     />
                   </div>
                 </div>
-                <div style={{ height: 6, borderRadius: 4, background: "#D4E4C8", overflow: "hidden" }}>
+                <div style={{ height: 6, borderRadius: 4, background: "#EDE0D2", overflow: "hidden" }}>
                   <div style={{ height: "100%", width: `${budget > 0 ? pct : 0}%`, background: barColor, borderRadius: 4, transition: "width 0.3s" }} />
                 </div>
                 {over && (
-                  <div style={{ fontSize: 10.5, color: "#A8382E", marginTop: 3 }}>
+                  <div style={{ fontSize: 10.5, color: "#B8574A", marginTop: 3 }}>
                     超出预算 ${formatMoney(spent - budget)}
                   </div>
                 )}
@@ -1988,14 +1988,14 @@ export default function MonthlyLedger() {
           })}
 
           {recurringTotal > 0 && (
-            <div style={{ borderTop: "1px dashed #A8C29A", paddingTop: 10, marginTop: 4, fontSize: 11.5, color: "#5A7360", display: "flex", justifyContent: "space-between" }}>
+            <div style={{ borderTop: "1px dashed #DDC6BC", paddingTop: 10, marginTop: 4, fontSize: 11.5, color: "#9C8478", display: "flex", justifyContent: "space-between" }}>
               <span>订阅/自动扣款（不计入分类预算）</span>
               <span style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 600 }}>${formatMoney(recurringTotal)}</span>
             </div>
           )}
 
-          <div style={{ borderTop: "1px dashed #A8C29A", paddingTop: 12, marginTop: 12 }}>
-            <div style={{ fontSize: 11, color: "#5A7360", marginBottom: 8 }}>管理分类</div>
+          <div style={{ borderTop: "1px dashed #DDC6BC", paddingTop: 12, marginTop: 12 }}>
+            <div style={{ fontSize: 11, color: "#9C8478", marginBottom: 8 }}>管理分类</div>
             {customCategories.length > 0 && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
                 {customCategories.map(c => (
@@ -2007,7 +2007,7 @@ export default function MonthlyLedger() {
                     {c.label}
                     <button
                       onClick={() => removeCategory(c.key)}
-                      style={{ border: "none", background: "none", color: "#5A7360", cursor: "pointer", padding: 0, display: "flex", alignItems: "center" }}
+                      style={{ border: "none", background: "none", color: "#9C8478", cursor: "pointer", padding: 0, display: "flex", alignItems: "center" }}
                     >
                       <Trash2 size={11} />
                     </button>
@@ -2021,39 +2021,39 @@ export default function MonthlyLedger() {
                 placeholder="新分类名称，如 宠物"
                 value={newCategoryName}
                 onChange={e => setNewCategoryName(e.target.value)}
-                style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: 1, outline: "none" }}
+                style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: 1, outline: "none" }}
               />
               <button
                 onClick={() => addCategory()}
                 style={{
-                  background: "#1F4A2E", color: "#FFFFFF", border: "none", borderRadius: 8,
+                  background: "#A37070", color: "#FFFFFF", border: "none", borderRadius: 8,
                   padding: "0 14px", display: "flex", alignItems: "center", gap: 5, cursor: "pointer", fontSize: 12.5, fontWeight: 700,
-                  boxShadow: "0 2px 6px rgba(31,74,46,0.4)",
+                  boxShadow: "0 2px 6px rgba(163,112,112,0.4)",
                 }}
               >
                 <Plus size={14} /> 添加
               </button>
             </div>
-            {categoryError && <div style={{ color: "#A8382E", fontSize: 11, marginTop: 6 }}>{categoryError}</div>}
+            {categoryError && <div style={{ color: "#B8574A", fontSize: 11, marginTop: 6 }}>{categoryError}</div>}
           </div>
           </>
           )}
         </div>
 
         {/* Add card — unified credit card + cash/savings account management */}
-        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "16px 18px" }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none", padding: "16px 18px" }}>
           <div
             onClick={() => toggleSection("cards")}
             style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: collapsedSections.cards ? 0 : 6, cursor: "pointer" }}
           >
-            <span style={{ fontSize: 10, color: "#5A7360" }}>{collapsedSections.cards ? "▸" : "▾"}</span>
-            <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700 }}>
+            <span style={{ fontSize: 10, color: "#9C8478" }}>{collapsedSections.cards ? "▸" : "▾"}</span>
+            <div style={{ fontSize: 12.5, color: "#5C3E3E", letterSpacing: 1, fontWeight: 700 }}>
               添加卡片
             </div>
           </div>
           {!collapsedSections.cards && (
           <>
-          <div style={{ fontSize: 10.5, color: "#5A7360", marginBottom: 12 }}>
+          <div style={{ fontSize: 10.5, color: "#9C8478", marginBottom: 12 }}>
             信用卡消费会等到还款日才计入现金流；储蓄/现金卡的支出会立即计入现金流
           </div>
 
@@ -2065,22 +2065,22 @@ export default function MonthlyLedger() {
                 const isEnded = !!(c.endMonth && selectedMonth > c.endMonth);
                 return (
                   <div key={c.id} style={{
-                    border: "1px solid #D4E4C8", borderRadius: 8, marginBottom: 6,
-                    background: isEnded ? "#FFFFFF" : "#E4EEDC", padding: "8px 10px", opacity: isEnded ? 0.75 : 1,
+                    border: "1px solid #EDE0D2", borderRadius: 8, marginBottom: 6,
+                    background: isEnded ? "#FFFFFF" : "#F7EFE5", padding: "8px 10px", opacity: isEnded ? 0.75 : 1,
                   }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ width: 8, height: 8, borderRadius: 2, background: isEnded ? "#A8C29A" : "#B8912E", flexShrink: 0 }} />
+                      <span style={{ width: 8, height: 8, borderRadius: 2, background: isEnded ? "#DDC6BC" : "#B89968", flexShrink: 0 }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {c.name} <span style={{ fontSize: 10, color: "#B8912E", fontWeight: 400 }}>信用卡</span>
+                          {c.name} <span style={{ fontSize: 10, color: "#B89968", fontWeight: 400 }}>信用卡</span>
                         </div>
-                        <div style={{ fontSize: 11, color: "#5A7360" }}>
+                        <div style={{ fontSize: 11, color: "#9C8478" }}>
                           本月已刷 ${formatMoney(totalsByCard[c.id] || 0)}
                           {isEnded && ` · 已于${c.endMonth}停用`}
                           {!isEnded && c.endMonth && ` · 将于${c.endMonth}后停用`}
                         </div>
                       </div>
-                      <div style={{ fontSize: 11.5, color: "#5A7360", flexShrink: 0 }}>每月{c.dueDay}日</div>
+                      <div style={{ fontSize: 11.5, color: "#9C8478", flexShrink: 0 }}>每月{c.dueDay}日</div>
 
                       {isEditing ? (
                         <>
@@ -2092,7 +2092,7 @@ export default function MonthlyLedger() {
                               value={editAmountInput}
                               onChange={e => setEditAmountInput(e.target.value)}
                               style={{
-                                width: 64, border: "none", borderBottom: "1px solid #B8912E", background: "transparent",
+                                width: 64, border: "none", borderBottom: "1px solid #B89968", background: "transparent",
                                 fontFamily: "'JetBrains Mono', monospace", fontSize: 13, textAlign: "right", outline: "none", padding: "1px 0",
                               }}
                             />
@@ -2103,7 +2103,7 @@ export default function MonthlyLedger() {
                               if (!isNaN(v) && v >= 0) updateCardAmount(c.id, selectedMonth, v);
                               setEditingCardId(null);
                             }}
-                            style={{ border: "none", background: "#3A8C4A", color: "#FFFFFF", borderRadius: 6, padding: "3px 8px", fontSize: 11, cursor: "pointer", flexShrink: 0 }}
+                            style={{ border: "none", background: "#7A9670", color: "#FFFFFF", borderRadius: 6, padding: "3px 8px", fontSize: 11, cursor: "pointer", flexShrink: 0 }}
                           >
                             存
                           </button>
@@ -2116,7 +2116,7 @@ export default function MonthlyLedger() {
                           {!isEnded && (
                             <button
                               onClick={() => { setEditingCardId(c.id); setEditAmountInput(String(currentAmount)); }}
-                              style={{ border: "none", background: "none", color: "#5A7360", cursor: "pointer", padding: 2, flexShrink: 0 }}
+                              style={{ border: "none", background: "none", color: "#9C8478", cursor: "pointer", padding: 2, flexShrink: 0 }}
                               title="修改本月还款金额"
                             >
                               <Pencil size={13} />
@@ -2130,21 +2130,21 @@ export default function MonthlyLedger() {
                       {isEnded ? (
                         <button
                           onClick={() => reactivateCard(c.id)}
-                          style={{ border: "none", background: "none", color: "#3A8C4A", cursor: "pointer", fontSize: 11, fontWeight: 600, padding: 0 }}
+                          style={{ border: "none", background: "none", color: "#7A9670", cursor: "pointer", fontSize: 11, fontWeight: 600, padding: 0 }}
                         >
                           恢复使用
                         </button>
                       ) : (
                         <button
                           onClick={() => endCard(c.id, selectedMonth)}
-                          style={{ border: "none", background: "none", color: "#B8912E", cursor: "pointer", fontSize: 11, fontWeight: 600, padding: 0 }}
+                          style={{ border: "none", background: "none", color: "#B89968", cursor: "pointer", fontSize: 11, fontWeight: 600, padding: 0 }}
                         >
                           停用这张卡（{selectedMonth}后不再出现在还款计划里）
                         </button>
                       )}
                       <button
                         onClick={() => removeCard(c.id)}
-                        style={{ border: "none", background: "none", color: "#A8C29A", cursor: "pointer", fontSize: 11, padding: 0 }}
+                        style={{ border: "none", background: "none", color: "#DDC6BC", cursor: "pointer", fontSize: 11, padding: 0 }}
                         title="彻底删除，包括历史月份的记录"
                       >
                         彻底删除
@@ -2157,13 +2157,13 @@ export default function MonthlyLedger() {
               {accounts.map(a => (
                 <div key={a.id} style={{
                   display: "flex", alignItems: "center", gap: 8, padding: "8px 10px",
-                  border: "1px solid #D4E4C8", borderRadius: 8, marginBottom: 6, background: "#E4EEDC",
+                  border: "1px solid #EDE0D2", borderRadius: 8, marginBottom: 6, background: "#F7EFE5",
                 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#3A8C4A", flexShrink: 0 }} />
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#7A9670", flexShrink: 0 }} />
                   <div style={{ flex: 1, fontSize: 13, fontWeight: 500 }}>
-                    {a.name} <span style={{ fontSize: 10, color: "#3A8C4A", fontWeight: 400 }}>储蓄/现金卡</span>
+                    {a.name} <span style={{ fontSize: 10, color: "#7A9670", fontWeight: 400 }}>储蓄/现金卡</span>
                   </div>
-                  <button onClick={() => removeAccount(a.id)} style={{ border: "none", background: "none", color: "#A8C29A", cursor: "pointer", padding: 2, flexShrink: 0 }}>
+                  <button onClick={() => removeAccount(a.id)} style={{ border: "none", background: "none", color: "#DDC6BC", cursor: "pointer", padding: 2, flexShrink: 0 }}>
                     <Trash2 size={13} />
                   </button>
                 </div>
@@ -2177,9 +2177,9 @@ export default function MonthlyLedger() {
               onClick={() => setNewCardType("credit")}
               style={{
                 flex: 1, padding: "7px 0", borderRadius: 8, cursor: "pointer", fontSize: 12.5, fontWeight: 600,
-                border: `1.5px solid ${newCardType === "credit" ? "#B8912E" : "#A8C29A"}`,
-                background: newCardType === "credit" ? "#B8912E" : "transparent",
-                color: newCardType === "credit" ? "#FFFFFF" : "#1F4A2E",
+                border: `1.5px solid ${newCardType === "credit" ? "#B89968" : "#DDC6BC"}`,
+                background: newCardType === "credit" ? "#B89968" : "transparent",
+                color: newCardType === "credit" ? "#FFFFFF" : "#A37070",
               }}
             >
               信用卡
@@ -2188,9 +2188,9 @@ export default function MonthlyLedger() {
               onClick={() => setNewCardType("account")}
               style={{
                 flex: 1, padding: "7px 0", borderRadius: 8, cursor: "pointer", fontSize: 12.5, fontWeight: 600,
-                border: `1.5px solid ${newCardType === "account" ? "#3A8C4A" : "#A8C29A"}`,
-                background: newCardType === "account" ? "#3A8C4A" : "transparent",
-                color: newCardType === "account" ? "#FFFFFF" : "#1F4A2E",
+                border: `1.5px solid ${newCardType === "account" ? "#7A9670" : "#DDC6BC"}`,
+                background: newCardType === "account" ? "#7A9670" : "transparent",
+                color: newCardType === "account" ? "#FFFFFF" : "#A37070",
               }}
             >
               储蓄 / 现金卡
@@ -2205,34 +2205,34 @@ export default function MonthlyLedger() {
                   placeholder="卡片名称"
                   value={cardForm.name}
                   onChange={e => setCardForm({ ...cardForm, name: e.target.value })}
-                  style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 90px", outline: "none" }}
+                  style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 90px", outline: "none" }}
                 />
                 <input
                   type="number"
                   placeholder="还款日"
                   value={cardForm.dueDay}
                   onChange={e => setCardForm({ ...cardForm, dueDay: e.target.value })}
-                  style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 60px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
+                  style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 60px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
                 />
                 <input
                   type="number"
                   placeholder="金额"
                   value={cardForm.amount}
                   onChange={e => setCardForm({ ...cardForm, amount: e.target.value })}
-                  style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 70px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
+                  style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 70px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
                 />
                 <button
                   onClick={addCard}
                   style={{
-                    background: "#B8912E", color: "#FFFFFF", border: "none", borderRadius: 8,
+                    background: "#B89968", color: "#FFFFFF", border: "none", borderRadius: 8,
                     padding: "0 12px", display: "flex", alignItems: "center", cursor: "pointer", flexShrink: 0,
-                    boxShadow: "0 2px 6px rgba(184,145,46,0.4)",
+                    boxShadow: "0 2px 6px rgba(184,153,104,0.4)",
                   }}
                 >
                   <Plus size={15} />
                 </button>
               </div>
-              {cardError && <div style={{ color: "#A8382E", fontSize: 12 }}>{cardError}</div>}
+              {cardError && <div style={{ color: "#B8574A", fontSize: 12 }}>{cardError}</div>}
             </>
           ) : (
             <>
@@ -2242,20 +2242,20 @@ export default function MonthlyLedger() {
                   placeholder="账户名称，如 现金 / 招行储蓄卡"
                   value={accountForm.name}
                   onChange={e => setAccountForm({ name: e.target.value })}
-                  style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: 1, outline: "none" }}
+                  style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: 1, outline: "none" }}
                 />
                 <button
                   onClick={addAccount}
                   style={{
-                    background: "#3A8C4A", color: "#FFFFFF", border: "none", borderRadius: 8,
+                    background: "#7A9670", color: "#FFFFFF", border: "none", borderRadius: 8,
                     padding: "0 12px", display: "flex", alignItems: "center", cursor: "pointer", flexShrink: 0,
-                    boxShadow: "0 2px 6px rgba(58,140,74,0.4)",
+                    boxShadow: "0 2px 6px rgba(122,150,112,0.4)",
                   }}
                 >
                   <Plus size={15} />
                 </button>
               </div>
-              {accountError && <div style={{ color: "#A8382E", fontSize: 12, marginTop: 6 }}>{accountError}</div>}
+              {accountError && <div style={{ color: "#B8574A", fontSize: 12, marginTop: 6 }}>{accountError}</div>}
             </>
           )}
           </>
@@ -2263,13 +2263,13 @@ export default function MonthlyLedger() {
         </div>
 
         {/* Cash flow planning — unaffected by the card/account list above; still reads the same data */}
-        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "16px 18px" }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none", padding: "16px 18px" }}>
           <div
             onClick={() => toggleSection("cashflow")}
             style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: collapsedSections.cashflow ? 0 : 10, cursor: "pointer" }}
           >
-            <span style={{ fontSize: 10, color: "#5A7360" }}>{collapsedSections.cashflow ? "▸" : "▾"}</span>
-            <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700 }}>
+            <span style={{ fontSize: 10, color: "#9C8478" }}>{collapsedSections.cashflow ? "▸" : "▾"}</span>
+            <div style={{ fontSize: 12.5, color: "#5C3E3E", letterSpacing: 1, fontWeight: 700 }}>
               现金流规划
             </div>
           </div>
@@ -2282,8 +2282,8 @@ export default function MonthlyLedger() {
 
           {ccWarnings.length > 0 && (
             <div style={{
-              background: "rgba(168,56,46,0.08)", border: "1px solid #A8382E", borderRadius: 8,
-              padding: "10px 12px", fontSize: 12.5, color: "#A8382E", marginBottom: 12, fontWeight: 500,
+              background: "rgba(184,87,74,0.08)", border: "1px solid #B8574A", borderRadius: 8,
+              padding: "10px 12px", fontSize: 12.5, color: "#B8574A", marginBottom: 12, fontWeight: 500,
             }}>
               {ccWarnings.map((w, i) => (
                 <div key={i}>⚠ {w.date} {w.label}时，账户预计缺口 ${formatMoney(Math.abs(w.running))}</div>
@@ -2296,29 +2296,29 @@ export default function MonthlyLedger() {
               {cashflowTimeline.map((r, i) => (
                 <div key={i} style={{
                   display: "flex", alignItems: "center", gap: 10, padding: "8px 0",
-                  borderTop: i === 0 ? "none" : "1px dashed #D4E4C8",
-                  background: r.type === "cc" ? "rgba(184,145,46,0.08)" : "transparent",
+                  borderTop: i === 0 ? "none" : "1px dashed #EDE0D2",
+                  background: r.type === "cc" ? "rgba(184,153,104,0.08)" : "transparent",
                 }}>
-                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "#5A7360", width: 68, flexShrink: 0 }}>
+                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "#9C8478", width: 68, flexShrink: 0 }}>
                     {r.date.slice(5)}
                   </div>
                   <div style={{
                     width: 6, height: 6, borderRadius: "50%", flexShrink: 0,
-                    background: (r.type === "income" || (r.type === "transfer" && r.amount >= 0)) ? "#3A8C4A"
-                      : (r.type === "cc" || r.type === "saving" || r.type === "rent") ? "#B8912E" : "#A8382E",
+                    background: (r.type === "income" || (r.type === "transfer" && r.amount >= 0)) ? "#7A9670"
+                      : (r.type === "cc" || r.type === "saving" || r.type === "rent") ? "#B89968" : "#B8574A",
                   }} />
                   <div style={{ flex: 1, fontSize: 12.5, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {r.label}
                   </div>
                   <div style={{
                     fontFamily: "'JetBrains Mono', monospace", fontSize: 12, fontWeight: 600, width: 66, textAlign: "right", flexShrink: 0,
-                    color: r.amount >= 0 ? "#3A8C4A" : "#A8382E",
+                    color: r.amount >= 0 ? "#7A9670" : "#B8574A",
                   }}>
                     {r.amount >= 0 ? "+" : "-"}${formatMoney(Math.abs(r.amount))}
                   </div>
                   <div style={{
                     fontFamily: "'JetBrains Mono', monospace", fontSize: 12, fontWeight: 700, width: 78, textAlign: "right", flexShrink: 0,
-                    color: r.running >= 0 ? "#1F4A2E" : "#A8382E",
+                    color: r.running >= 0 ? "#A37070" : "#B8574A",
                   }}>
                     {r.running >= 0 ? "" : "-"}${formatMoney(Math.abs(r.running))}
                   </div>
@@ -2327,7 +2327,7 @@ export default function MonthlyLedger() {
             </div>
           )}
           {cashflowTimeline.length === 0 && (
-            <div style={{ fontSize: 12, color: "#5A7360", textAlign: "center", padding: "8px 0" }}>
+            <div style={{ fontSize: 12, color: "#9C8478", textAlign: "center", padding: "8px 0" }}>
               填写工资和信用卡信息后，这里会显示现金流时间线
             </div>
           )}
@@ -2336,18 +2336,18 @@ export default function MonthlyLedger() {
         </div>
 
         {/* Transfers */}
-        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "16px 18px" }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none", padding: "16px 18px" }}>
           <div
             onClick={() => toggleSection("transfers")}
             style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: collapsedSections.transfers ? 0 : 10, cursor: "pointer" }}
           >
-            <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 10, color: "#5A7360" }}>{collapsedSections.transfers ? "▸" : "▾"}</span>
+            <div style={{ fontSize: 12.5, color: "#5C3E3E", letterSpacing: 1, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 10, color: "#9C8478" }}>{collapsedSections.transfers ? "▸" : "▾"}</span>
               转账
             </div>
             <div style={{
               fontSize: 13, fontWeight: 700,
-              color: netTransfers >= 0 ? "#3A8C4A" : "#A8382E",
+              color: netTransfers >= 0 ? "#7A9670" : "#B8574A",
             }}>
               净额 <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{netTransfers >= 0 ? "+" : "-"}${formatMoney(Math.abs(netTransfers))}</span>
             </div>
@@ -2360,21 +2360,21 @@ export default function MonthlyLedger() {
               {monthTransfers.map(t => (
                 <div key={t.id} style={{
                   display: "flex", alignItems: "center", gap: 8, padding: "8px 10px",
-                  border: "1px solid #D4E4C8", borderRadius: 8, marginBottom: 6, background: "#E4EEDC",
+                  border: "1px solid #EDE0D2", borderRadius: 8, marginBottom: 6, background: "#F7EFE5",
                 }}>
                   <span style={{
                     width: 8, height: 8, borderRadius: 2, flexShrink: 0,
-                    background: t.direction === "in" ? "#3A8C4A" : "#A8382E",
+                    background: t.direction === "in" ? "#7A9670" : "#B8574A",
                   }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {t.person}{t.note && <span style={{ color: "#5A7360", fontWeight: 400 }}> · {t.note}</span>}
+                      {t.person}{t.note && <span style={{ color: "#9C8478", fontWeight: 400 }}> · {t.note}</span>}
                     </div>
-                    <div style={{ fontSize: 11, color: "#5A7360", fontFamily: "'JetBrains Mono', monospace", display: "flex", gap: 6, alignItems: "center" }}>
+                    <div style={{ fontSize: 11, color: "#9C8478", fontFamily: "'JetBrains Mono', monospace", display: "flex", gap: 6, alignItems: "center" }}>
                       <span>{t.date}</span>
                       {t.countAsExpense && t.category && (
                         <span style={{
-                          background: "rgba(168,56,46,0.12)", color: "#A8382E", padding: "1px 6px",
+                          background: "rgba(184,87,74,0.12)", color: "#B8574A", padding: "1px 6px",
                           borderRadius: 10, fontSize: 10.5, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif",
                         }}>
                           计入支出 · {CAT_MAP[t.category]?.label}
@@ -2384,11 +2384,11 @@ export default function MonthlyLedger() {
                   </div>
                   <div style={{
                     fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, flexShrink: 0,
-                    color: t.direction === "in" ? "#3A8C4A" : "#A8382E",
+                    color: t.direction === "in" ? "#7A9670" : "#B8574A",
                   }}>
                     {t.direction === "in" ? "+" : "-"}${formatMoney(t.amount)}
                   </div>
-                  <button onClick={() => removeTransfer(t.id)} style={{ border: "none", background: "none", color: "#A8C29A", cursor: "pointer", padding: 2, flexShrink: 0 }}>
+                  <button onClick={() => removeTransfer(t.id)} style={{ border: "none", background: "none", color: "#DDC6BC", cursor: "pointer", padding: 2, flexShrink: 0 }}>
                     <Trash2 size={13} />
                   </button>
                 </div>
@@ -2401,9 +2401,9 @@ export default function MonthlyLedger() {
               onClick={() => setTransferForm({ ...transferForm, direction: "in" })}
               style={{
                 padding: "6px 12px", borderRadius: 20, fontSize: 12.5, cursor: "pointer", flex: 1,
-                border: `1.5px solid ${transferForm.direction === "in" ? "#3A8C4A" : "#A8C29A"}`,
-                background: transferForm.direction === "in" ? "#3A8C4A" : "transparent",
-                color: transferForm.direction === "in" ? "#FFFFFF" : "#1F4A2E",
+                border: `1.5px solid ${transferForm.direction === "in" ? "#7A9670" : "#DDC6BC"}`,
+                background: transferForm.direction === "in" ? "#7A9670" : "transparent",
+                color: transferForm.direction === "in" ? "#FFFFFF" : "#A37070",
                 fontWeight: transferForm.direction === "in" ? 700 : 400,
               }}
             >
@@ -2413,9 +2413,9 @@ export default function MonthlyLedger() {
               onClick={() => setTransferForm({ ...transferForm, direction: "out" })}
               style={{
                 padding: "6px 12px", borderRadius: 20, fontSize: 12.5, cursor: "pointer", flex: 1,
-                border: `1.5px solid ${transferForm.direction === "out" ? "#A8382E" : "#A8C29A"}`,
-                background: transferForm.direction === "out" ? "#A8382E" : "transparent",
-                color: transferForm.direction === "out" ? "#FFFFFF" : "#1F4A2E",
+                border: `1.5px solid ${transferForm.direction === "out" ? "#B8574A" : "#DDC6BC"}`,
+                background: transferForm.direction === "out" ? "#B8574A" : "transparent",
+                color: transferForm.direction === "out" ? "#FFFFFF" : "#A37070",
                 fontWeight: transferForm.direction === "out" ? 700 : 400,
               }}
             >
@@ -2429,15 +2429,15 @@ export default function MonthlyLedger() {
                 onClick={() => setTransferForm({ ...transferForm, countAsExpense: !transferForm.countAsExpense })}
                 style={{
                   padding: "6px 14px", borderRadius: 20, fontSize: 12.5, cursor: "pointer",
-                  border: `1.5px solid ${transferForm.countAsExpense ? "#A8382E" : "#A8C29A"}`,
-                  background: transferForm.countAsExpense ? "#A8382E" : "transparent",
-                  color: transferForm.countAsExpense ? "#FFFFFF" : "#1F4A2E",
+                  border: `1.5px solid ${transferForm.countAsExpense ? "#B8574A" : "#DDC6BC"}`,
+                  background: transferForm.countAsExpense ? "#B8574A" : "transparent",
+                  color: transferForm.countAsExpense ? "#FFFFFF" : "#A37070",
                   fontWeight: transferForm.countAsExpense ? 700 : 400,
                 }}
               >
                 计入本月支出
               </button>
-              <div style={{ fontSize: 10.5, color: "#5A7360", marginTop: 5 }}>
+              <div style={{ fontSize: 10.5, color: "#9C8478", marginTop: 5 }}>
                 比如别人先帮你代付、你转账还给对方，这笔就是你的真实支出
               </div>
               {transferForm.countAsExpense && (
@@ -2448,9 +2448,9 @@ export default function MonthlyLedger() {
                       onClick={() => setTransferForm({ ...transferForm, category: c.key })}
                       style={{
                         padding: "5px 11px", borderRadius: 20, fontSize: 12, cursor: "pointer",
-                        border: `1.5px solid ${transferForm.category === c.key ? c.color : "#A8C29A"}`,
+                        border: `1.5px solid ${transferForm.category === c.key ? c.color : "#DDC6BC"}`,
                         background: transferForm.category === c.key ? c.color : "transparent",
-                        color: transferForm.category === c.key ? "#FFFFFF" : "#1F4A2E",
+                        color: transferForm.category === c.key ? "#FFFFFF" : "#A37070",
                         fontWeight: transferForm.category === c.key ? 700 : 400,
                       }}
                     >
@@ -2468,20 +2468,20 @@ export default function MonthlyLedger() {
               placeholder="对方姓名"
               value={transferForm.person}
               onChange={e => setTransferForm({ ...transferForm, person: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 100px", outline: "none" }}
+              style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 100px", outline: "none" }}
             />
             <input
               type="number"
               placeholder="金额"
               value={transferForm.amount}
               onChange={e => setTransferForm({ ...transferForm, amount: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 70px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
+              style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 70px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
             />
             <input
               type="date"
               value={transferForm.date}
               onChange={e => setTransferForm({ ...transferForm, date: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12, flex: "1 1 120px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
+              style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 12, flex: "1 1 120px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
             />
           </div>
 
@@ -2491,37 +2491,37 @@ export default function MonthlyLedger() {
               placeholder="备注（可选）"
               value={transferForm.note}
               onChange={e => setTransferForm({ ...transferForm, note: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: 1, outline: "none" }}
+              style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: 1, outline: "none" }}
             />
             <button
               onClick={addTransfer}
               style={{
-                background: "#1F4A2E", color: "#DCE8D2", border: "none", borderRadius: 8,
+                background: "#A37070", color: "#F3E8DC", border: "none", borderRadius: 8,
                 padding: "0 14px", display: "flex", alignItems: "center", gap: 5, cursor: "pointer", fontSize: 12.5, fontWeight: 700,
               }}
             >
               <Plus size={14} /> 记录
             </button>
           </div>
-          {transferError && <div style={{ color: "#A8382E", fontSize: 12, marginTop: 6 }}>{transferError}</div>}
+          {transferError && <div style={{ color: "#B8574A", fontSize: 12, marginTop: 6 }}>{transferError}</div>}
           </>
           )}
         </div>
 
         {/* Recurring subscriptions / auto-deducted expenses */}
-        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "16px 18px" }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none", padding: "16px 18px" }}>
           <div
             onClick={() => toggleSection("recurring")}
             style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: collapsedSections.recurring ? 0 : 6, cursor: "pointer" }}
           >
-            <span style={{ fontSize: 10, color: "#5A7360" }}>{collapsedSections.recurring ? "▸" : "▾"}</span>
-            <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700 }}>
+            <span style={{ fontSize: 10, color: "#9C8478" }}>{collapsedSections.recurring ? "▸" : "▾"}</span>
+            <div style={{ fontSize: 12.5, color: "#5C3E3E", letterSpacing: 1, fontWeight: 700 }}>
               订阅 / 自动扣款
             </div>
           </div>
           {!collapsedSections.recurring && (
           <>
-          <div style={{ fontSize: 11, color: "#5A7360", marginBottom: 10 }}>
+          <div style={{ fontSize: 11, color: "#9C8478", marginBottom: 10 }}>
             添加一次，每月会自动计入支出总额，不用每月手动记账
           </div>
 
@@ -2533,14 +2533,14 @@ export default function MonthlyLedger() {
                 const isEnded = !!(r.endMonth && selectedMonth > r.endMonth);
                 return (
                   <div key={r.id} style={{
-                    border: "1px solid #D4E4C8", borderRadius: 8, marginBottom: 6, background: isEnded ? "#FFFFFF" : "#E4EEDC",
+                    border: "1px solid #EDE0D2", borderRadius: 8, marginBottom: 6, background: isEnded ? "#FFFFFF" : "#F7EFE5",
                     padding: "8px 10px", opacity: isEnded ? 0.75 : 1,
                   }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ width: 8, height: 8, borderRadius: 2, flexShrink: 0, background: isEnded ? "#A8C29A" : "#4F8577" }} />
+                      <span style={{ width: 8, height: 8, borderRadius: 2, flexShrink: 0, background: isEnded ? "#DDC6BC" : "#B08999" }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</div>
-                        <div style={{ fontSize: 11, color: "#5A7360" }}>
+                        <div style={{ fontSize: 11, color: "#9C8478" }}>
                           {r.frequency === "yearly" ? "每年" : "每月"}{r.day}日
                           {r.startMonth && ` · 自${r.startMonth}起`}
                           {isEnded && ` · 已于${r.endMonth}结束`}
@@ -2559,7 +2559,7 @@ export default function MonthlyLedger() {
                               value={editRecurringAmountInput}
                               onChange={e => setEditRecurringAmountInput(e.target.value)}
                               style={{
-                                width: 64, border: "none", borderBottom: "1px solid #4F8577", background: "transparent",
+                                width: 64, border: "none", borderBottom: "1px solid #B08999", background: "transparent",
                                 fontFamily: "'JetBrains Mono', monospace", fontSize: 13, textAlign: "right", outline: "none", padding: "1px 0",
                               }}
                             />
@@ -2570,7 +2570,7 @@ export default function MonthlyLedger() {
                               if (!isNaN(v) && v >= 0) updateRecurringAmount(r.id, selectedMonth, v);
                               setEditingRecurringId(null);
                             }}
-                            style={{ border: "none", background: "#3A8C4A", color: "#FFFFFF", borderRadius: 6, padding: "3px 8px", fontSize: 11, cursor: "pointer", flexShrink: 0 }}
+                            style={{ border: "none", background: "#7A9670", color: "#FFFFFF", borderRadius: 6, padding: "3px 8px", fontSize: 11, cursor: "pointer", flexShrink: 0 }}
                           >
                             存
                           </button>
@@ -2583,7 +2583,7 @@ export default function MonthlyLedger() {
                           {!isEnded && (
                             <button
                               onClick={() => { setEditingRecurringId(r.id); setEditRecurringAmountInput(String(currentAmount)); }}
-                              style={{ border: "none", background: "none", color: "#5A7360", cursor: "pointer", padding: 2, flexShrink: 0 }}
+                              style={{ border: "none", background: "none", color: "#9C8478", cursor: "pointer", padding: 2, flexShrink: 0 }}
                               title="修改本月金额"
                             >
                               <Pencil size={13} />
@@ -2597,21 +2597,21 @@ export default function MonthlyLedger() {
                       {isEnded ? (
                         <button
                           onClick={() => reactivateRecurring(r.id)}
-                          style={{ border: "none", background: "none", color: "#3A8C4A", cursor: "pointer", fontSize: 11, fontWeight: 600, padding: 0 }}
+                          style={{ border: "none", background: "none", color: "#7A9670", cursor: "pointer", fontSize: 11, fontWeight: 600, padding: 0 }}
                         >
                           恢复订阅
                         </button>
                       ) : (
                         <button
                           onClick={() => endRecurring(r.id, selectedMonth)}
-                          style={{ border: "none", background: "none", color: "#B8912E", cursor: "pointer", fontSize: 11, fontWeight: 600, padding: 0 }}
+                          style={{ border: "none", background: "none", color: "#B89968", cursor: "pointer", fontSize: 11, fontWeight: 600, padding: 0 }}
                         >
                           结束订阅（{selectedMonth}后不再自动扣款）
                         </button>
                       )}
                       <button
                         onClick={() => removeRecurring(r.id)}
-                        style={{ border: "none", background: "none", color: "#A8C29A", cursor: "pointer", fontSize: 11, padding: 0 }}
+                        style={{ border: "none", background: "none", color: "#DDC6BC", cursor: "pointer", fontSize: 11, padding: 0 }}
                         title="彻底删除，包括历史月份的记录"
                       >
                         彻底删除
@@ -2625,7 +2625,7 @@ export default function MonthlyLedger() {
 
           {cards.length > 0 && (
             <div style={{ marginBottom: 10 }}>
-              <div style={{ fontSize: 11, color: "#5A7360", marginBottom: 6 }}>用哪张卡自动扣款（可选）</div>
+              <div style={{ fontSize: 11, color: "#9C8478", marginBottom: 6 }}>用哪张卡自动扣款（可选）</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {cards.map(c => (
                   <button
@@ -2633,9 +2633,9 @@ export default function MonthlyLedger() {
                     onClick={() => setRecurringForm({ ...recurringForm, cardId: recurringForm.cardId === c.id ? "" : c.id })}
                     style={{
                       padding: "6px 12px", borderRadius: 20, fontSize: 12.5, cursor: "pointer",
-                      border: `1.5px solid ${recurringForm.cardId === c.id ? "#B8912E" : "#A8C29A"}`,
-                      background: recurringForm.cardId === c.id ? "#B8912E" : "transparent",
-                      color: recurringForm.cardId === c.id ? "#FFFFFF" : "#1F4A2E",
+                      border: `1.5px solid ${recurringForm.cardId === c.id ? "#B89968" : "#DDC6BC"}`,
+                      background: recurringForm.cardId === c.id ? "#B89968" : "transparent",
+                      color: recurringForm.cardId === c.id ? "#FFFFFF" : "#A37070",
                       fontWeight: recurringForm.cardId === c.id ? 700 : 400,
                     }}
                   >
@@ -2651,9 +2651,9 @@ export default function MonthlyLedger() {
               onClick={() => setRecurringForm({ ...recurringForm, frequency: "monthly" })}
               style={{
                 padding: "6px 12px", borderRadius: 20, fontSize: 12.5, cursor: "pointer", flex: 1,
-                border: `1.5px solid ${recurringForm.frequency === "monthly" ? "#1F4A2E" : "#A8C29A"}`,
-                background: recurringForm.frequency === "monthly" ? "#1F4A2E" : "transparent",
-                color: recurringForm.frequency === "monthly" ? "#FFFFFF" : "#1F4A2E",
+                border: `1.5px solid ${recurringForm.frequency === "monthly" ? "#A37070" : "#DDC6BC"}`,
+                background: recurringForm.frequency === "monthly" ? "#A37070" : "transparent",
+                color: recurringForm.frequency === "monthly" ? "#FFFFFF" : "#A37070",
                 fontWeight: recurringForm.frequency === "monthly" ? 700 : 400,
               }}
             >
@@ -2663,9 +2663,9 @@ export default function MonthlyLedger() {
               onClick={() => setRecurringForm({ ...recurringForm, frequency: "yearly" })}
               style={{
                 padding: "6px 12px", borderRadius: 20, fontSize: 12.5, cursor: "pointer", flex: 1,
-                border: `1.5px solid ${recurringForm.frequency === "yearly" ? "#1F4A2E" : "#A8C29A"}`,
-                background: recurringForm.frequency === "yearly" ? "#1F4A2E" : "transparent",
-                color: recurringForm.frequency === "yearly" ? "#FFFFFF" : "#1F4A2E",
+                border: `1.5px solid ${recurringForm.frequency === "yearly" ? "#A37070" : "#DDC6BC"}`,
+                background: recurringForm.frequency === "yearly" ? "#A37070" : "transparent",
+                color: recurringForm.frequency === "yearly" ? "#FFFFFF" : "#A37070",
                 fontWeight: recurringForm.frequency === "yearly" ? 700 : 400,
               }}
             >
@@ -2674,12 +2674,12 @@ export default function MonthlyLedger() {
           </div>
 
           <div style={{ marginBottom: 10 }}>
-            <div style={{ fontSize: 11, color: "#5A7360", marginBottom: 6 }}>开始时间（之前的月份不会受影响）</div>
+            <div style={{ fontSize: 11, color: "#9C8478", marginBottom: 6 }}>开始时间（之前的月份不会受影响）</div>
             <input
               type="month"
               value={recurringForm.startMonth}
               onChange={e => setRecurringForm({ ...recurringForm, startMonth: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, fontFamily: "'JetBrains Mono', monospace", outline: "none", width: "100%" }}
+              style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, fontFamily: "'JetBrains Mono', monospace", outline: "none", width: "100%" }}
             />
           </div>
 
@@ -2689,34 +2689,34 @@ export default function MonthlyLedger() {
               placeholder="名称，如 Netflix"
               value={recurringForm.name}
               onChange={e => setRecurringForm({ ...recurringForm, name: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 110px", outline: "none" }}
+              style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 110px", outline: "none" }}
             />
             <input
               type="number"
               placeholder="扣款日"
               value={recurringForm.day}
               onChange={e => setRecurringForm({ ...recurringForm, day: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 60px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
+              style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 60px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
             />
             <input
               type="number"
               placeholder="金额"
               value={recurringForm.amount}
               onChange={e => setRecurringForm({ ...recurringForm, amount: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 70px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
+              style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 70px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
             />
             <button
               onClick={addRecurring}
               style={{
-                background: "#1F4A2E", color: "#DCE8D2", border: "none", borderRadius: 8,
+                background: "#A37070", color: "#F3E8DC", border: "none", borderRadius: 8,
                 padding: "0 12px", display: "flex", alignItems: "center", cursor: "pointer", flexShrink: 0,
-                boxShadow: "0 2px 6px rgba(31,74,46,0.35)",
+                boxShadow: "0 2px 6px rgba(163,112,112,0.35)",
               }}
             >
               <Plus size={15} />
             </button>
           </div>
-          {recurringError && <div style={{ color: "#A8382E", fontSize: 12 }}>{recurringError}</div>}
+          {recurringError && <div style={{ color: "#B8574A", fontSize: 12 }}>{recurringError}</div>}
           </>
           )}
         </div>
@@ -2726,10 +2726,10 @@ export default function MonthlyLedger() {
         {activeTab === "quickadd" && (
         <>
         {/* Quick add — numeric keypad entry */}
-        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", borderRadius: "4px 4px 20px 20px", padding: 16, position: "relative" }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none", borderRadius: "4px 4px 20px 20px", padding: 16, position: "relative" }}>
           {stampFlash && (
             <div style={{
-              position: "absolute", top: 8, right: 14, color: "#A8382E", border: "2px solid #A8382E",
+              position: "absolute", top: 8, right: 14, color: "#B8574A", border: "2px solid #B8574A",
               borderRadius: 6, padding: "3px 8px", fontSize: 11, fontWeight: 700, letterSpacing: 1,
               transform: "rotate(-8deg)", opacity: 0.9,
               animation: "stampIn 0.5s ease-out", zIndex: 2,
@@ -2742,9 +2742,9 @@ export default function MonthlyLedger() {
               onClick={() => setForm({ ...form, isRefund: !form.isRefund, fundId: "" })}
               style={{
                 padding: "6px 14px", borderRadius: 20, fontSize: 12.5, cursor: "pointer",
-                border: `1.5px solid ${form.isRefund ? "#3A8C4A" : "#A8C29A"}`,
-                background: form.isRefund ? "#3A8C4A" : "transparent",
-                color: form.isRefund ? "#FFFFFF" : "#1F4A2E",
+                border: `1.5px solid ${form.isRefund ? "#7A9670" : "#DDC6BC"}`,
+                background: form.isRefund ? "#7A9670" : "transparent",
+                color: form.isRefund ? "#FFFFFF" : "#A37070",
                 fontWeight: form.isRefund ? 700 : 400,
                 transition: "all 0.15s",
               }}
@@ -2752,7 +2752,7 @@ export default function MonthlyLedger() {
               ↩ 这是一笔退款
             </button>
             {form.isRefund && (
-              <div style={{ fontSize: 10.5, color: "#5A7360", marginTop: 5 }}>
+              <div style={{ fontSize: 10.5, color: "#9C8478", marginTop: 5 }}>
                 退款会退回信用卡，减少本月对应分类和该卡的支出，不影响现金流
               </div>
             )}
@@ -2765,9 +2765,9 @@ export default function MonthlyLedger() {
                 onClick={() => setForm({ ...form, category: c.key })}
                 style={{
                   padding: "6px 12px", borderRadius: 20, fontSize: 12.5, cursor: "pointer",
-                  border: `1.5px solid ${form.category === c.key ? c.color : "#A8C29A"}`,
+                  border: `1.5px solid ${form.category === c.key ? c.color : "#DDC6BC"}`,
                   background: form.category === c.key ? c.color : "transparent",
-                  color: form.category === c.key ? "#FFFFFF" : "#1F4A2E",
+                  color: form.category === c.key ? "#FFFFFF" : "#A37070",
                   fontWeight: form.category === c.key ? 700 : 400,
                   transition: "all 0.15s",
                 }}
@@ -2779,7 +2779,7 @@ export default function MonthlyLedger() {
               onClick={() => setShowAddCategory(!showAddCategory)}
               style={{
                 padding: "6px 12px", borderRadius: 20, fontSize: 12.5, cursor: "pointer",
-                border: "1.5px dashed #5A7360", background: "transparent", color: "#5A7360",
+                border: "1.5px dashed #9C8478", background: "transparent", color: "#9C8478",
                 display: "flex", alignItems: "center", gap: 3,
               }}
             >
@@ -2795,14 +2795,14 @@ export default function MonthlyLedger() {
                 value={newCategoryName}
                 onChange={e => setNewCategoryName(e.target.value)}
                 autoFocus
-                style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: 1, outline: "none" }}
+                style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: 1, outline: "none" }}
               />
               <button
                 onClick={() => addCategory(key => setForm(prev => ({ ...prev, category: key })))}
                 style={{
-                  background: "#1F4A2E", color: "#FFFFFF", border: "none", borderRadius: 8,
+                  background: "#A37070", color: "#FFFFFF", border: "none", borderRadius: 8,
                   padding: "0 14px", fontSize: 12.5, fontWeight: 700, cursor: "pointer",
-                  boxShadow: "0 2px 6px rgba(31,74,46,0.4)",
+                  boxShadow: "0 2px 6px rgba(163,112,112,0.4)",
                 }}
               >
                 添加
@@ -2810,12 +2810,12 @@ export default function MonthlyLedger() {
             </div>
           )}
           {showAddCategory && categoryError && (
-            <div style={{ color: "#A8382E", fontSize: 11, marginTop: -6, marginBottom: 10 }}>{categoryError}</div>
+            <div style={{ color: "#B8574A", fontSize: 11, marginTop: -6, marginBottom: 10 }}>{categoryError}</div>
           )}
 
           {cards.filter(c => isCardActiveForMonth(c, monthKey(form.date))).length > 0 && (
             <div style={{ marginBottom: 10 }}>
-              <div style={{ fontSize: 11, color: form.isRefund ? "#A8382E" : "#5A7360", marginBottom: 6 }}>
+              <div style={{ fontSize: 11, color: form.isRefund ? "#B8574A" : "#9C8478", marginBottom: 6 }}>
                 {form.isRefund ? "退到哪张卡（必选）" : "用哪张卡支付"}
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -2825,9 +2825,9 @@ export default function MonthlyLedger() {
                     onClick={() => setForm({ ...form, cardId: form.cardId === c.id ? "" : c.id, accountId: "" })}
                     style={{
                       padding: "6px 12px", borderRadius: 20, fontSize: 12.5, cursor: "pointer",
-                      border: `1.5px solid ${form.cardId === c.id ? "#B8912E" : "#A8C29A"}`,
-                      background: form.cardId === c.id ? "#B8912E" : "transparent",
-                      color: form.cardId === c.id ? "#FFFFFF" : "#1F4A2E",
+                      border: `1.5px solid ${form.cardId === c.id ? "#B89968" : "#DDC6BC"}`,
+                      background: form.cardId === c.id ? "#B89968" : "transparent",
+                      color: form.cardId === c.id ? "#FFFFFF" : "#A37070",
                       fontWeight: form.cardId === c.id ? 700 : 400,
                       transition: "all 0.15s",
                     }}
@@ -2841,7 +2841,7 @@ export default function MonthlyLedger() {
 
           {!form.isRefund && accounts.length > 0 && (
             <div style={{ marginBottom: 10 }}>
-              <div style={{ fontSize: 11, color: "#5A7360", marginBottom: 6 }}>
+              <div style={{ fontSize: 11, color: "#9C8478", marginBottom: 6 }}>
                 或者用现金/储蓄账户支付（不走信用卡，立即计入现金流）
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -2851,9 +2851,9 @@ export default function MonthlyLedger() {
                     onClick={() => setForm({ ...form, accountId: form.accountId === a.id ? "" : a.id, cardId: "" })}
                     style={{
                       padding: "6px 12px", borderRadius: 20, fontSize: 12.5, cursor: "pointer",
-                      border: `1.5px solid ${form.accountId === a.id ? "#3A8C4A" : "#A8C29A"}`,
-                      background: form.accountId === a.id ? "#3A8C4A" : "transparent",
-                      color: form.accountId === a.id ? "#FFFFFF" : "#1F4A2E",
+                      border: `1.5px solid ${form.accountId === a.id ? "#7A9670" : "#DDC6BC"}`,
+                      background: form.accountId === a.id ? "#7A9670" : "transparent",
+                      color: form.accountId === a.id ? "#FFFFFF" : "#A37070",
                       fontWeight: form.accountId === a.id ? 700 : 400,
                       transition: "all 0.15s",
                     }}
@@ -2867,9 +2867,9 @@ export default function MonthlyLedger() {
 
           {!form.isRefund && form.category === "fund" && (
             <div style={{ marginBottom: 10 }}>
-              <div style={{ fontSize: 11, color: "#5A7360", marginBottom: 6 }}>从哪个基金支出（会自动扣减该基金的已存金额）</div>
+              <div style={{ fontSize: 11, color: "#9C8478", marginBottom: 6 }}>从哪个基金支出（会自动扣减该基金的已存金额）</div>
               {savingsGoals.length === 0 ? (
-                <div style={{ fontSize: 12, color: "#A8382E" }}>
+                <div style={{ fontSize: 12, color: "#B8574A" }}>
                   还没有基金，先去"基金管理"里创建一个
                 </div>
               ) : (
@@ -2880,9 +2880,9 @@ export default function MonthlyLedger() {
                       onClick={() => setForm({ ...form, fundId: form.fundId === g.id ? "" : g.id })}
                       style={{
                         padding: "6px 12px", borderRadius: 20, fontSize: 12.5, cursor: "pointer",
-                        border: `1.5px solid ${form.fundId === g.id ? "#6B4F7A" : "#A8C29A"}`,
-                        background: form.fundId === g.id ? "#6B4F7A" : "transparent",
-                        color: form.fundId === g.id ? "#FFFFFF" : "#1F4A2E",
+                        border: `1.5px solid ${form.fundId === g.id ? "#7A5C74" : "#DDC6BC"}`,
+                        background: form.fundId === g.id ? "#7A5C74" : "transparent",
+                        color: form.fundId === g.id ? "#FFFFFF" : "#A37070",
                         fontWeight: form.fundId === g.id ? 700 : 400,
                         transition: "all 0.15s",
                       }}
@@ -2900,31 +2900,31 @@ export default function MonthlyLedger() {
               type="date"
               value={form.date}
               onChange={e => setForm({ ...form, date: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "8px 10px", fontSize: 13, flex: "0 0 140px", fontFamily: "'JetBrains Mono', monospace", color: "#1F4A2E" }}
+              style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "8px 10px", fontSize: 13, flex: "0 0 140px", fontFamily: "'JetBrains Mono', monospace", color: "#A37070" }}
             />
             <input
               type="text"
               placeholder="备注（可选）"
               value={form.note}
               onChange={e => setForm({ ...form, note: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "8px 10px", fontSize: 13, flex: 1, outline: "none" }}
+              style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "8px 10px", fontSize: 13, flex: 1, outline: "none" }}
             />
           </div>
 
           {/* amount display */}
           <div style={{
-            background: "#E4EEDC", border: "1px solid #A8C29A", borderRadius: 12, padding: "16px 18px",
+            background: "#F7EFE5", border: "1px solid #DDC6BC", borderRadius: 12, padding: "16px 18px",
             marginBottom: 10, display: "flex", alignItems: "baseline", justifyContent: "space-between",
           }}>
             <button
               onClick={() => pressKeypad("clear")}
-              style={{ border: "none", background: "none", color: "#A8382E", fontSize: 12, cursor: "pointer", padding: 0 }}
+              style={{ border: "none", background: "none", color: "#B8574A", fontSize: 12, cursor: "pointer", padding: 0 }}
             >
               清空
             </button>
             <div style={{
               fontFamily: "'JetBrains Mono', monospace", fontSize: 32, fontWeight: 700,
-              color: form.amount ? "#1F4A2E" : "#A8C29A", lineHeight: 1.2,
+              color: form.amount ? "#A37070" : "#DDC6BC", lineHeight: 1.2,
             }}>
               ${form.amount || "0"}
             </div>
@@ -2937,9 +2937,9 @@ export default function MonthlyLedger() {
                 key={k}
                 onClick={() => pressKeypad(k)}
                 style={{
-                  padding: "16px 0", borderRadius: 12, border: "1px solid #A8C29A",
-                  background: k === "back" ? "#E4EEDC" : "#FFFFFF",
-                  color: "#1F4A2E",
+                  padding: "16px 0", borderRadius: 12, border: "1px solid #DDC6BC",
+                  background: k === "back" ? "#F7EFE5" : "#FFFFFF",
+                  color: "#A37070",
                   fontSize: 18, fontWeight: 700, cursor: "pointer",
                   fontFamily: k === "back" ? "inherit" : "'JetBrains Mono', monospace",
                   display: "flex", alignItems: "center", justifyContent: "center",
@@ -2953,13 +2953,13 @@ export default function MonthlyLedger() {
           {/* shared/reimbursed portion — e.g. multiple friends splitting a bill you fronted */}
           <div style={{ marginBottom: 12 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <div style={{ fontSize: 11, color: "#5A7360" }}>
+              <div style={{ fontSize: 11, color: "#9C8478" }}>
                 有人分摊这笔钱吗？（比如帮朋友代付，之后对方会转账还你）
               </div>
               <button
                 onClick={addSplitRow}
                 style={{
-                  border: "1px dashed #5A7360", background: "transparent", color: "#5A7360",
+                  border: "1px dashed #9C8478", background: "transparent", color: "#9C8478",
                   borderRadius: 20, padding: "3px 10px", fontSize: 11, cursor: "pointer",
                   display: "flex", alignItems: "center", gap: 3, flexShrink: 0,
                 }}
@@ -2975,10 +2975,10 @@ export default function MonthlyLedger() {
                   placeholder="姓名"
                   value={s.person}
                   onChange={e => updateSplitRow(idx, "person", e.target.value)}
-                  style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 13, flex: "1 1 90px", outline: "none" }}
+                  style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 13, flex: "1 1 90px", outline: "none" }}
                 />
-                <div style={{ display: "flex", alignItems: "center", flex: "0 0 100px", border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px" }}>
-                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, marginRight: 4, color: "#12241A" }}>$</span>
+                <div style={{ display: "flex", alignItems: "center", flex: "0 0 100px", border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px" }}>
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, marginRight: 4, color: "#5C3E3E" }}>$</span>
                   <input
                     type="number"
                     placeholder="金额"
@@ -2989,7 +2989,7 @@ export default function MonthlyLedger() {
                 </div>
                 <button
                   onClick={() => removeSplitRow(idx)}
-                  style={{ border: "none", background: "none", color: "#A8C29A", cursor: "pointer", padding: "0 4px", flexShrink: 0 }}
+                  style={{ border: "none", background: "none", color: "#DDC6BC", cursor: "pointer", padding: "0 4px", flexShrink: 0 }}
                 >
                   <Trash2 size={14} />
                 </button>
@@ -2999,7 +2999,7 @@ export default function MonthlyLedger() {
             {form.splits.length > 0 && parseFloat(form.amount) > 0 && (() => {
               const totalSplit = form.splits.reduce((a, s) => a + (parseFloat(s.amount) || 0), 0);
               return totalSplit > 0 ? (
-                <div style={{ fontSize: 11, color: "#3A8C4A" }}>
+                <div style={{ fontSize: 11, color: "#7A9670" }}>
                   实际计入本月支出：${formatMoney(Math.max(0, parseFloat(form.amount) - totalSplit))}
                   （信用卡还是会算刷了 ${formatMoney(parseFloat(form.amount))} 的全额）
                 </div>
@@ -3009,22 +3009,22 @@ export default function MonthlyLedger() {
 
           {/* who owes how much — running total across all your split expenses, net of transfers already received */}
           {splitSummary.length > 0 && (
-            <div style={{ marginBottom: 12, border: "1px solid #A8C29A", borderRadius: 8, padding: "10px 12px", background: "#E4EEDC" }}>
-              <div style={{ fontSize: 11, color: "#12241A", fontWeight: 700, marginBottom: 6 }}>谁该分摊多少钱</div>
+            <div style={{ marginBottom: 12, border: "1px solid #DDC6BC", borderRadius: 8, padding: "10px 12px", background: "#F7EFE5" }}>
+              <div style={{ fontSize: 11, color: "#5C3E3E", fontWeight: 700, marginBottom: 6 }}>谁该分摊多少钱</div>
               {splitSummary.map(s => (
-                <div key={s.person} style={{ padding: "5px 0", borderBottom: "1px dashed #A8C29A" }}>
+                <div key={s.person} style={{ padding: "5px 0", borderBottom: "1px dashed #DDC6BC" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12.5 }}>
-                    <span style={{ color: "#12241A" }}>{s.person}</span>
+                    <span style={{ color: "#5C3E3E" }}>{s.person}</span>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{
                         fontFamily: "'JetBrains Mono', monospace", fontWeight: 700,
-                        color: s.amount > 0 ? "#A8382E" : "#3A8C4A",
+                        color: s.amount > 0 ? "#B8574A" : "#7A9670",
                       }}>
                         {s.amount > 0 ? `欠你 $${formatMoney(s.amount)}` : `你欠 $${formatMoney(Math.abs(s.amount))}`}
                       </span>
                       <button
                         onClick={() => { setAdjustingPerson(adjustingPerson === s.person ? null : s.person); setAdjustAmountInput(""); }}
-                        style={{ border: "none", background: "none", color: "#5A7360", cursor: "pointer", padding: 2 }}
+                        style={{ border: "none", background: "none", color: "#9C8478", cursor: "pointer", padding: 2 }}
                         title="调整金额"
                       >
                         <Pencil size={12} />
@@ -3032,7 +3032,7 @@ export default function MonthlyLedger() {
                       {s.amount > 0 && (
                         <button
                           onClick={() => markSplitAsTransferred(s.person, s.amount)}
-                          style={{ border: "none", background: "none", color: "#3A8C4A", cursor: "pointer", fontSize: 11, fontWeight: 600, padding: 0 }}
+                          style={{ border: "none", background: "none", color: "#7A9670", cursor: "pointer", fontSize: 11, fontWeight: 600, padding: 0 }}
                           title="对方已经转账还你了，自动记一笔转入"
                         >
                           已转账
@@ -3040,7 +3040,7 @@ export default function MonthlyLedger() {
                       )}
                       <button
                         onClick={() => writeOffSplit(s.person, s.amount)}
-                        style={{ border: "none", background: "none", color: "#5A7360", cursor: "pointer", fontSize: 11, padding: 0 }}
+                        style={{ border: "none", background: "none", color: "#9C8478", cursor: "pointer", fontSize: 11, padding: 0 }}
                         title="核销这笔账，不需要真的转账"
                       >
                         核销
@@ -3055,7 +3055,7 @@ export default function MonthlyLedger() {
                         placeholder="调整金额，正数=减少欠款，负数=增加"
                         value={adjustAmountInput}
                         onChange={e => setAdjustAmountInput(e.target.value)}
-                        style={{ border: "1px solid #A8C29A", borderRadius: 6, padding: "5px 8px", fontSize: 12, flex: 1, fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
+                        style={{ border: "1px solid #DDC6BC", borderRadius: 6, padding: "5px 8px", fontSize: 12, flex: 1, fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
                       />
                       <button
                         onClick={() => {
@@ -3064,7 +3064,7 @@ export default function MonthlyLedger() {
                           setAdjustingPerson(null);
                           setAdjustAmountInput("");
                         }}
-                        style={{ border: "none", background: "#3A8C4A", color: "#FFFFFF", borderRadius: 6, padding: "0 12px", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
+                        style={{ border: "none", background: "#7A9670", color: "#FFFFFF", borderRadius: 6, padding: "0 12px", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
                       >
                         确认
                       </button>
@@ -3078,15 +3078,15 @@ export default function MonthlyLedger() {
           <button
             onClick={addEntry}
             style={{
-              width: "100%", background: "#1F4A2E", color: "#DCE8D2", border: "none", borderRadius: 12,
+              width: "100%", background: "#A37070", color: "#F3E8DC", border: "none", borderRadius: 12,
               padding: "14px 0", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
               cursor: "pointer", fontSize: 15, fontWeight: 700,
-              boxShadow: "0 2px 6px rgba(31,74,46,0.35)",
+              boxShadow: "0 2px 6px rgba(163,112,112,0.35)",
             }}
           >
             <Plus size={17} /> 记一笔
           </button>
-          {error && <div style={{ color: "#A8382E", fontSize: 12, marginTop: 8, textAlign: "center" }}>{error}</div>}
+          {error && <div style={{ color: "#B8574A", fontSize: 12, marginTop: 8, textAlign: "center" }}>{error}</div>}
         </div>
         </>
         )}
@@ -3094,20 +3094,20 @@ export default function MonthlyLedger() {
         {activeTab === "ledger" && (
         <>
 
-        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "12px 16px" }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none", padding: "12px 16px" }}>
           <div style={{ display: "flex", gap: 8, marginBottom: showFilters ? 10 : 0 }}>
             <input
               type="text"
               placeholder="搜索备注 / 分类…"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              style={{ flex: 1, border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 10px", fontSize: 13, outline: "none" }}
+              style={{ flex: 1, border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 10px", fontSize: 13, outline: "none" }}
             />
             <button
               onClick={() => setShowFilters(!showFilters)}
               style={{
-                border: `1px solid ${showFilters ? "#1F4A2E" : "#A8C29A"}`, borderRadius: 8, padding: "0 12px",
-                background: showFilters ? "#1F4A2E" : "transparent", color: showFilters ? "#FFFFFF" : "#1F4A2E",
+                border: `1px solid ${showFilters ? "#A37070" : "#DDC6BC"}`, borderRadius: 8, padding: "0 12px",
+                background: showFilters ? "#A37070" : "transparent", color: showFilters ? "#FFFFFF" : "#A37070",
                 cursor: "pointer", fontSize: 12.5, fontWeight: 600, flexShrink: 0,
               }}
             >
@@ -3122,9 +3122,9 @@ export default function MonthlyLedger() {
                   onClick={() => setFilterCategory("")}
                   style={{
                     padding: "5px 11px", borderRadius: 20, fontSize: 12, cursor: "pointer",
-                    border: `1.5px solid ${!filterCategory ? "#1F4A2E" : "#A8C29A"}`,
-                    background: !filterCategory ? "#1F4A2E" : "transparent",
-                    color: !filterCategory ? "#FFFFFF" : "#1F4A2E", fontWeight: !filterCategory ? 700 : 400,
+                    border: `1.5px solid ${!filterCategory ? "#A37070" : "#DDC6BC"}`,
+                    background: !filterCategory ? "#A37070" : "transparent",
+                    color: !filterCategory ? "#FFFFFF" : "#A37070", fontWeight: !filterCategory ? 700 : 400,
                   }}
                 >
                   全部分类
@@ -3135,9 +3135,9 @@ export default function MonthlyLedger() {
                     onClick={() => setFilterCategory(filterCategory === c.key ? "" : c.key)}
                     style={{
                       padding: "5px 11px", borderRadius: 20, fontSize: 12, cursor: "pointer",
-                      border: `1.5px solid ${filterCategory === c.key ? c.color : "#A8C29A"}`,
+                      border: `1.5px solid ${filterCategory === c.key ? c.color : "#DDC6BC"}`,
                       background: filterCategory === c.key ? c.color : "transparent",
-                      color: filterCategory === c.key ? "#FFFFFF" : "#1F4A2E",
+                      color: filterCategory === c.key ? "#FFFFFF" : "#A37070",
                       fontWeight: filterCategory === c.key ? 700 : 400,
                     }}
                   >
@@ -3146,26 +3146,26 @@ export default function MonthlyLedger() {
                 ))}
               </div>
               <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                <span style={{ fontSize: 11.5, color: "#5A7360", flexShrink: 0 }}>金额范围</span>
+                <span style={{ fontSize: 11.5, color: "#9C8478", flexShrink: 0 }}>金额范围</span>
                 <input
                   type="number"
                   placeholder="最低"
                   value={filterMinAmount}
                   onChange={e => setFilterMinAmount(e.target.value)}
-                  style={{ width: 70, border: "1px solid #A8C29A", borderRadius: 8, padding: "5px 8px", fontSize: 12.5, fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
+                  style={{ width: 70, border: "1px solid #DDC6BC", borderRadius: 8, padding: "5px 8px", fontSize: 12.5, fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
                 />
-                <span style={{ color: "#5A7360" }}>–</span>
+                <span style={{ color: "#9C8478" }}>–</span>
                 <input
                   type="number"
                   placeholder="最高"
                   value={filterMaxAmount}
                   onChange={e => setFilterMaxAmount(e.target.value)}
-                  style={{ width: 70, border: "1px solid #A8C29A", borderRadius: 8, padding: "5px 8px", fontSize: 12.5, fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
+                  style={{ width: 70, border: "1px solid #DDC6BC", borderRadius: 8, padding: "5px 8px", fontSize: 12.5, fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
                 />
                 {(filterCategory || filterMinAmount || filterMaxAmount || searchQuery) && (
                   <button
                     onClick={() => { setFilterCategory(""); setFilterMinAmount(""); setFilterMaxAmount(""); setSearchQuery(""); }}
-                    style={{ border: "none", background: "none", color: "#A8382E", cursor: "pointer", fontSize: 11.5, marginLeft: "auto" }}
+                    style={{ border: "none", background: "none", color: "#B8574A", cursor: "pointer", fontSize: 11.5, marginLeft: "auto" }}
                   >
                     清除筛选
                   </button>
@@ -3178,39 +3178,39 @@ export default function MonthlyLedger() {
         <div
           onClick={() => toggleSection("entries")}
           style={{
-            background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", borderBottom: collapsedSections.entries ? "1px solid #A8C29A" : "none",
+            background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none", borderBottom: collapsedSections.entries ? "1px solid #DDC6BC" : "none",
             padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "#12241A", fontWeight: 700, letterSpacing: 1 }}>
-            <span style={{ fontSize: 10, color: "#5A7360" }}>{collapsedSections.entries ? "▸" : "▾"}</span>
-            记录列表 <span style={{ fontWeight: 400, color: "#5A7360" }}>（{filteredMonthEntries.length}笔）</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "#5C3E3E", fontWeight: 700, letterSpacing: 1 }}>
+            <span style={{ fontSize: 10, color: "#9C8478" }}>{collapsedSections.entries ? "▸" : "▾"}</span>
+            记录列表 <span style={{ fontWeight: 400, color: "#9C8478" }}>（{filteredMonthEntries.length}笔）</span>
           </div>
         </div>
 
         {!collapsedSections.entries && (
-        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", borderRadius: "4px 4px 20px 20px", overflow: "hidden" }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none", borderRadius: "4px 4px 20px 20px", overflow: "hidden" }}>
           {filteredMonthEntries.length === 0 ? (
-            <div style={{ padding: "30px 18px", textAlign: "center", color: "#5A7360", fontSize: 13 }}>
+            <div style={{ padding: "30px 18px", textAlign: "center", color: "#9C8478", fontSize: 13 }}>
               {monthEntries.length === 0 ? "这个月还没有记录，记下第一笔支出吧" : "没有符合条件的记录"}
             </div>
           ) : (
             filteredMonthEntries.map((e, idx) => (
               <div key={e.id} style={{
                 display: "flex", alignItems: "center", gap: 10, padding: "12px 16px",
-                borderTop: idx === 0 ? "none" : "1px dashed #D4E4C8",
+                borderTop: idx === 0 ? "none" : "1px dashed #EDE0D2",
               }}>
-                <span style={{ width: 8, height: 8, borderRadius: 2, background: e.isRefund ? "#3A8C4A" : e.recurring ? "#4F8577" : (CAT_MAP[e.category]?.color || "#5A7360"), flexShrink: 0 }} />
+                <span style={{ width: 8, height: 8, borderRadius: 2, background: e.isRefund ? "#7A9670" : e.recurring ? "#B08999" : (CAT_MAP[e.category]?.color || "#9C8478"), flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13.5, fontWeight: 500 }}>
                     {e.recurring ? "订阅" : (CAT_MAP[e.category]?.label || "已删除的分类")}
-                    {e.note && <span style={{ color: "#5A7360", fontWeight: 400 }}> · {e.note}</span>}
+                    {e.note && <span style={{ color: "#9C8478", fontWeight: 400 }}> · {e.note}</span>}
                   </div>
-                  <div style={{ fontSize: 11, color: "#5A7360", fontFamily: "'JetBrains Mono', monospace", display: "flex", gap: 6, alignItems: "center" }}>
+                  <div style={{ fontSize: 11, color: "#9C8478", fontFamily: "'JetBrains Mono', monospace", display: "flex", gap: 6, alignItems: "center" }}>
                     <span>{e.date}</span>
                     {e.cardId && cards.find(c => c.id === e.cardId) && (
                       <span style={{
-                        background: "rgba(184,145,46,0.15)", color: "#8A5A2A", padding: "1px 6px",
+                        background: "rgba(184,153,104,0.15)", color: "#8A5A2A", padding: "1px 6px",
                         borderRadius: 10, fontSize: 10.5, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif",
                       }}>
                         {cards.find(c => c.id === e.cardId).name}
@@ -3218,7 +3218,7 @@ export default function MonthlyLedger() {
                     )}
                     {e.accountId && accounts.find(a => a.id === e.accountId) && (
                       <span style={{
-                        background: "rgba(58,140,74,0.15)", color: "#2E6B3A", padding: "1px 6px",
+                        background: "rgba(122,150,112,0.15)", color: "#6B8560", padding: "1px 6px",
                         borderRadius: 10, fontSize: 10.5, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif",
                       }}>
                         {accounts.find(a => a.id === e.accountId).name}
@@ -3226,7 +3226,7 @@ export default function MonthlyLedger() {
                     )}
                     {e.fundId && savingsGoals.find(g => g.id === e.fundId) && (
                       <span style={{
-                        background: "rgba(107,79,122,0.15)", color: "#6B4F7A", padding: "1px 6px",
+                        background: "rgba(122,92,116,0.15)", color: "#7A5C74", padding: "1px 6px",
                         borderRadius: 10, fontSize: 10.5, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif",
                       }}>
                         ← {savingsGoals.find(g => g.id === e.fundId).name}
@@ -3234,7 +3234,7 @@ export default function MonthlyLedger() {
                     )}
                     {e.recurring && (
                       <span style={{
-                        background: "rgba(79,133,119,0.18)", color: "#4A3C2E", padding: "1px 6px",
+                        background: "rgba(176,137,153,0.18)", color: "#6B5245", padding: "1px 6px",
                         borderRadius: 10, fontSize: 10.5, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif",
                       }}>
                         订阅自动扣款
@@ -3242,7 +3242,7 @@ export default function MonthlyLedger() {
                     )}
                     {e.isRefund && (
                       <span style={{
-                        background: "rgba(58,140,74,0.15)", color: "#3A8C4A", padding: "1px 6px",
+                        background: "rgba(122,150,112,0.15)", color: "#7A9670", padding: "1px 6px",
                         borderRadius: 10, fontSize: 10.5, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif",
                       }}>
                         退款
@@ -3250,7 +3250,7 @@ export default function MonthlyLedger() {
                     )}
                     {e.excludedAmount > 0 && (
                       <span style={{
-                        background: "rgba(58,140,74,0.15)", color: "#3A8C4A", padding: "1px 6px",
+                        background: "rgba(122,150,112,0.15)", color: "#7A9670", padding: "1px 6px",
                         borderRadius: 10, fontSize: 10.5, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif",
                       }}>
                         他人分摊{(e.splits && e.splits.length > 0) ? `（${e.splits.map(s => s.person).join("、")}）` : (e.splitPerson ? `（${e.splitPerson}）` : "")} ${formatMoney(e.excludedAmount)}
@@ -3258,18 +3258,18 @@ export default function MonthlyLedger() {
                     )}
                   </div>
                   {e.excludedAmount > 0 && (
-                    <div style={{ fontSize: 10.5, color: "#5A7360", marginTop: 2 }}>
+                    <div style={{ fontSize: 10.5, color: "#9C8478", marginTop: 2 }}>
                       共 ${formatMoney(e.amount)}，计入支出 ${formatMoney(e.amount - e.excludedAmount)}
                     </div>
                   )}
                 </div>
-                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: 14, color: e.isRefund ? "#3A8C4A" : "#1F4A2E" }}>
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: 14, color: e.isRefund ? "#7A9670" : "#A37070" }}>
                   {e.isRefund ? "+" : ""}${formatMoney(e.amount)}
                 </div>
                 {e.recurring ? (
                   <div style={{ width: 22 }} />
                 ) : (
-                  <button onClick={() => removeEntry(e.id)} style={{ border: "none", background: "none", color: "#A8C29A", cursor: "pointer", padding: 4 }}>
+                  <button onClick={() => removeEntry(e.id)} style={{ border: "none", background: "none", color: "#DDC6BC", cursor: "pointer", padding: 4 }}>
                     <Trash2 size={14} />
                   </button>
                 )}
@@ -3279,7 +3279,7 @@ export default function MonthlyLedger() {
         </div>
         )}
 
-        <div style={{ textAlign: "center", fontSize: 11, color: "#5A7360", marginTop: 14 }}>
+        <div style={{ textAlign: "center", fontSize: 11, color: "#9C8478", marginTop: 14 }}>
           数据已同步到云端 · {monthsAvailable.length} 个月记录
         </div>
         </>
@@ -3288,27 +3288,27 @@ export default function MonthlyLedger() {
         {activeTab === "trend" && (
         <>
         {/* Monthly spending trend */}
-        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "16px 14px" }}>
-          <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none", padding: "16px 14px" }}>
+          <div style={{ fontSize: 12.5, color: "#5C3E3E", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>
             月度总支出趋势
           </div>
-          <div style={{ fontSize: 10.5, color: "#5A7360", marginBottom: 12 }}>
+          <div style={{ fontSize: 10.5, color: "#9C8478", marginBottom: 12 }}>
             {trendMonths[0]} 至 {trendMonths[trendMonths.length - 1]}，近 6 个月
           </div>
 
           <div style={{ height: 200 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={monthlyTrend} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
-                <CartesianGrid stroke="#D4E4C8" vertical={false} />
+                <CartesianGrid stroke="#EDE0D2" vertical={false} />
                 <XAxis
                   dataKey="month"
                   tickFormatter={m => m.slice(5)}
-                  tick={{ fontSize: 11, fill: "#5A7360" }}
-                  axisLine={{ stroke: "#A8C29A" }}
+                  tick={{ fontSize: 11, fill: "#9C8478" }}
+                  axisLine={{ stroke: "#DDC6BC" }}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 10, fill: "#5A7360" }}
+                  tick={{ fontSize: 10, fill: "#9C8478" }}
                   axisLine={false}
                   tickLine={false}
                   width={44}
@@ -3321,9 +3321,9 @@ export default function MonthlyLedger() {
                 <Line
                   type="monotone"
                   dataKey="total"
-                  stroke="#1F4A2E"
+                  stroke="#A37070"
                   strokeWidth={2.5}
-                  dot={{ r: 4, fill: "#1F4A2E" }}
+                  dot={{ r: 4, fill: "#A37070" }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
@@ -3332,8 +3332,8 @@ export default function MonthlyLedger() {
         </div>
 
         {/* Month-by-month breakdown */}
-        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "16px 18px" }}>
-          <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700, marginBottom: 10 }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none", padding: "16px 18px" }}>
+          <div style={{ fontSize: 12.5, color: "#5C3E3E", letterSpacing: 1, fontWeight: 700, marginBottom: 10 }}>
             逐月明细
           </div>
           {monthlyTrend.slice().reverse().map((m, idx) => {
@@ -3343,10 +3343,10 @@ export default function MonthlyLedger() {
             return (
               <div key={m.month} style={{
                 display: "flex", alignItems: "center", gap: 10, padding: "10px 0",
-                borderTop: idx === 0 ? "none" : "1px dashed #D4E4C8",
+                borderTop: idx === 0 ? "none" : "1px dashed #EDE0D2",
               }}>
                 <div style={{
-                  fontSize: 13, fontWeight: isCurrent ? 700 : 500, color: isCurrent ? "#1F4A2E" : "#12241A",
+                  fontSize: 13, fontWeight: isCurrent ? 700 : 500, color: isCurrent ? "#A37070" : "#5C3E3E",
                   fontFamily: "'JetBrains Mono', monospace", flex: 1,
                 }}>
                   {m.month}{isCurrent && " · 本月"}
@@ -3354,12 +3354,12 @@ export default function MonthlyLedger() {
                 {diff !== null && diff !== 0 && (
                   <div style={{
                     fontSize: 11, fontFamily: "'JetBrains Mono', monospace",
-                    color: diff > 0 ? "#A8382E" : "#3A8C4A",
+                    color: diff > 0 ? "#B8574A" : "#7A9670",
                   }}>
                     {diff > 0 ? "▲" : "▼"} ${formatMoney(Math.abs(diff))}
                   </div>
                 )}
-                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: 14, color: "#1F4A2E", minWidth: 80, textAlign: "right" }}>
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: 14, color: "#A37070", minWidth: 80, textAlign: "right" }}>
                   ${formatMoney(m.total)}
                 </div>
               </div>
@@ -3368,16 +3368,16 @@ export default function MonthlyLedger() {
         </div>
 
         {/* Per-category monthly trend */}
-        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", borderRadius: "4px 4px 20px 20px", padding: "16px 14px" }}>
-          <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none", borderRadius: "4px 4px 20px 20px", padding: "16px 14px" }}>
+          <div style={{ fontSize: 12.5, color: "#5C3E3E", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>
             分类月度走势
           </div>
-          <div style={{ fontSize: 10.5, color: "#5A7360", marginBottom: 12 }}>
+          <div style={{ fontSize: 10.5, color: "#9C8478", marginBottom: 12 }}>
             看看哪些分类的花销在涨、哪些在降
           </div>
 
           {activeTrendCategories.length === 0 ? (
-            <div style={{ fontSize: 12.5, color: "#5A7360", textAlign: "center", padding: "12px 0" }}>
+            <div style={{ fontSize: 12.5, color: "#9C8478", textAlign: "center", padding: "12px 0" }}>
               这几个月还没有分类支出记录
             </div>
           ) : (() => {
@@ -3394,9 +3394,9 @@ export default function MonthlyLedger() {
                       onClick={() => setSelectedTrendCategory(c.key)}
                       style={{
                         padding: "5px 12px", borderRadius: 20, fontSize: 12, cursor: "pointer",
-                        border: `1.5px solid ${currentKey === c.key ? c.color : "#A8C29A"}`,
+                        border: `1.5px solid ${currentKey === c.key ? c.color : "#DDC6BC"}`,
                         background: currentKey === c.key ? c.color : "transparent",
-                        color: currentKey === c.key ? "#FFFFFF" : "#1F4A2E",
+                        color: currentKey === c.key ? "#FFFFFF" : "#A37070",
                         fontWeight: currentKey === c.key ? 700 : 400,
                         transition: "all 0.15s",
                       }}
@@ -3409,16 +3409,16 @@ export default function MonthlyLedger() {
                 <div style={{ height: 200 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={monthlyCategoryTrend} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
-                      <CartesianGrid stroke="#D4E4C8" vertical={false} />
+                      <CartesianGrid stroke="#EDE0D2" vertical={false} />
                       <XAxis
                         dataKey="month"
                         tickFormatter={m => m.slice(5)}
-                        tick={{ fontSize: 11, fill: "#5A7360" }}
-                        axisLine={{ stroke: "#A8C29A" }}
+                        tick={{ fontSize: 11, fill: "#9C8478" }}
+                        axisLine={{ stroke: "#DDC6BC" }}
                         tickLine={false}
                       />
                       <YAxis
-                        tick={{ fontSize: 10, fill: "#5A7360" }}
+                        tick={{ fontSize: 10, fill: "#9C8478" }}
                         axisLine={false}
                         tickLine={false}
                         width={44}
@@ -3437,7 +3437,7 @@ export default function MonthlyLedger() {
                   </ResponsiveContainer>
                 </div>
 
-                <div style={{ borderTop: "1px dashed #D4E4C8", marginTop: 12, paddingTop: 12 }}>
+                <div style={{ borderTop: "1px dashed #EDE0D2", marginTop: 12, paddingTop: 12 }}>
                   {activeTrendCategories.map(c => {
                     const curVal = monthlyCategoryTrend[monthlyCategoryTrend.length - 1][c.key] || 0;
                     const prevVal = monthlyCategoryTrend.length > 1 ? (monthlyCategoryTrend[monthlyCategoryTrend.length - 2][c.key] || 0) : null;
@@ -3452,13 +3452,13 @@ export default function MonthlyLedger() {
                         }}
                       >
                         <span style={{ width: 8, height: 8, borderRadius: 2, background: c.color, flexShrink: 0 }} />
-                        <div style={{ flex: 1, fontSize: 12.5, color: "#12241A", fontWeight: currentKey === c.key ? 700 : 400 }}>{c.label}</div>
+                        <div style={{ flex: 1, fontSize: 12.5, color: "#5C3E3E", fontWeight: currentKey === c.key ? 700 : 400 }}>{c.label}</div>
                         {diff !== null && diff !== 0 && (
-                          <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', monospace", color: diff > 0 ? "#A8382E" : "#3A8C4A" }}>
+                          <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', monospace", color: diff > 0 ? "#B8574A" : "#7A9670" }}>
                             {diff > 0 ? "▲" : "▼"} ${formatMoney(Math.abs(diff))}
                           </div>
                         )}
-                        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: 13, color: "#1F4A2E", minWidth: 70, textAlign: "right" }}>
+                        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: 13, color: "#A37070", minWidth: 70, textAlign: "right" }}>
                           ${formatMoney(curVal)}
                         </div>
                       </div>
@@ -3475,29 +3475,29 @@ export default function MonthlyLedger() {
         {activeTab === "assets" && (
         <>
         {/* Net worth summary */}
-        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", color: "#12241A", padding: "18px 20px", borderTop: "none", position: "relative", overflow: "hidden" }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #DDC6BC", color: "#5C3E3E", padding: "18px 20px", borderTop: "none", position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", top: -14, right: -6, fontSize: 70, opacity: 0.08, transform: "rotate(15deg)" }}>⚽</div>
-          <div style={{ fontSize: 11, letterSpacing: 2, opacity: 0.6, marginBottom: 8, color: "#5A7360" }}>
+          <div style={{ fontSize: 11, letterSpacing: 2, opacity: 0.6, marginBottom: 8, color: "#9C8478" }}>
             净资产 <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>NET WORTH</span>
           </div>
-          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: 26, color: "#1F4A2E" }}>
+          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: 26, color: "#A37070" }}>
             ${formatMoney(netWorth)}
           </div>
           <div style={{ display: "flex", gap: 20, marginTop: 12, fontSize: 12 }}>
             <div>
-              <div style={{ opacity: 0.6, marginBottom: 2, color: "#5A7360" }}>总资产</div>
-              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 600, color: "#3A8C4A" }}>${formatMoney(totalAssets)}</div>
+              <div style={{ opacity: 0.6, marginBottom: 2, color: "#9C8478" }}>总资产</div>
+              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 600, color: "#7A9670" }}>${formatMoney(totalAssets)}</div>
             </div>
             <div>
-              <div style={{ opacity: 0.6, marginBottom: 2, color: "#5A7360" }}>总负债</div>
-              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 600, color: "#A8382E" }}>${formatMoney(totalLiabilities)}</div>
+              <div style={{ opacity: 0.6, marginBottom: 2, color: "#9C8478" }}>总负债</div>
+              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 600, color: "#B8574A" }}>${formatMoney(totalLiabilities)}</div>
             </div>
           </div>
         </div>
 
         {/* Asset breakdown chart */}
         {assetPieData.length > 0 && (
-          <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "10px 8px 4px" }}>
+          <div style={{ background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none", padding: "10px 8px 4px" }}>
             <div style={{ height: 180 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -3510,7 +3510,7 @@ export default function MonthlyLedger() {
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", justifyContent: "center", paddingBottom: 10, fontSize: 12 }}>
               {assetPieData.map((d, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, color: "#12241A" }}>
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, color: "#5C3E3E" }}>
                   <span style={{ width: 8, height: 8, borderRadius: 2, background: d.color, display: "inline-block" }} />
                   {d.name} ${formatMoney(d.value)}
                 </div>
@@ -3520,8 +3520,8 @@ export default function MonthlyLedger() {
         )}
 
         {/* Assets list + add form */}
-        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "16px 18px" }}>
-          <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700, marginBottom: 10 }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none", padding: "16px 18px" }}>
+          <div style={{ fontSize: 12.5, color: "#5C3E3E", letterSpacing: 1, fontWeight: 700, marginBottom: 10 }}>
             资产
           </div>
 
@@ -3530,17 +3530,17 @@ export default function MonthlyLedger() {
               {assets.map(a => (
                 <div key={a.id} style={{
                   display: "flex", alignItems: "center", gap: 8, padding: "8px 10px",
-                  border: "1px solid #D4E4C8", borderRadius: 8, marginBottom: 6, background: "#E4EEDC",
+                  border: "1px solid #EDE0D2", borderRadius: 8, marginBottom: 6, background: "#F7EFE5",
                 }}>
                   <span style={{ width: 8, height: 8, borderRadius: 2, flexShrink: 0, background: ASSET_CAT_MAP[a.category].color }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.name}</div>
-                    <div style={{ fontSize: 11, color: "#5A7360" }}>{ASSET_CAT_MAP[a.category].label}</div>
+                    <div style={{ fontSize: 11, color: "#9C8478" }}>{ASSET_CAT_MAP[a.category].label}</div>
                   </div>
                   <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
                     ${formatMoney(a.value)}
                   </div>
-                  <button onClick={() => removeAsset(a.id)} style={{ border: "none", background: "none", color: "#A8C29A", cursor: "pointer", padding: 2, flexShrink: 0 }}>
+                  <button onClick={() => removeAsset(a.id)} style={{ border: "none", background: "none", color: "#DDC6BC", cursor: "pointer", padding: 2, flexShrink: 0 }}>
                     <Trash2 size={13} />
                   </button>
                 </div>
@@ -3555,9 +3555,9 @@ export default function MonthlyLedger() {
                 onClick={() => setAssetForm({ ...assetForm, category: c.key })}
                 style={{
                   padding: "6px 12px", borderRadius: 20, fontSize: 12.5, cursor: "pointer",
-                  border: `1.5px solid ${assetForm.category === c.key ? c.color : "#A8C29A"}`,
+                  border: `1.5px solid ${assetForm.category === c.key ? c.color : "#DDC6BC"}`,
                   background: assetForm.category === c.key ? c.color : "transparent",
-                  color: assetForm.category === c.key ? "#FFFFFF" : "#1F4A2E",
+                  color: assetForm.category === c.key ? "#FFFFFF" : "#A37070",
                   fontWeight: assetForm.category === c.key ? 700 : 400,
                 }}
               >
@@ -3572,32 +3572,32 @@ export default function MonthlyLedger() {
               placeholder="资产名称，如 招商银行储蓄"
               value={assetForm.name}
               onChange={e => setAssetForm({ ...assetForm, name: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 140px", outline: "none" }}
+              style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 140px", outline: "none" }}
             />
             <input
               type="number"
               placeholder="金额"
               value={assetForm.value}
               onChange={e => setAssetForm({ ...assetForm, value: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 80px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
+              style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 80px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
             />
             <button
               onClick={addAsset}
               style={{
-                background: "#3A8C4A", color: "#FFFFFF", border: "none", borderRadius: 8,
+                background: "#7A9670", color: "#FFFFFF", border: "none", borderRadius: 8,
                 padding: "0 12px", display: "flex", alignItems: "center", cursor: "pointer", flexShrink: 0,
-                boxShadow: "0 2px 6px rgba(58,140,74,0.4)",
+                boxShadow: "0 2px 6px rgba(122,150,112,0.4)",
               }}
             >
               <Plus size={15} />
             </button>
           </div>
-          {assetError && <div style={{ color: "#A8382E", fontSize: 12 }}>{assetError}</div>}
+          {assetError && <div style={{ color: "#B8574A", fontSize: 12 }}>{assetError}</div>}
         </div>
 
         {/* Liabilities list + add form */}
-        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", borderRadius: "4px 4px 20px 20px", padding: "16px 18px" }}>
-          <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700, marginBottom: 10 }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none", borderRadius: "4px 4px 20px 20px", padding: "16px 18px" }}>
+          <div style={{ fontSize: 12.5, color: "#5C3E3E", letterSpacing: 1, fontWeight: 700, marginBottom: 10 }}>
             负债
           </div>
 
@@ -3606,16 +3606,16 @@ export default function MonthlyLedger() {
               {liabilities.map(l => (
                 <div key={l.id} style={{
                   display: "flex", alignItems: "center", gap: 8, padding: "8px 10px",
-                  border: "1px solid #D4E4C8", borderRadius: 8, marginBottom: 6, background: "#E4EEDC",
+                  border: "1px solid #EDE0D2", borderRadius: 8, marginBottom: 6, background: "#F7EFE5",
                 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: 2, flexShrink: 0, background: "#A8382E" }} />
+                  <span style={{ width: 8, height: 8, borderRadius: 2, flexShrink: 0, background: "#B8574A" }} />
                   <div style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {l.name}
                   </div>
-                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, flexShrink: 0, color: "#A8382E" }}>
+                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, flexShrink: 0, color: "#B8574A" }}>
                     ${formatMoney(l.value)}
                   </div>
-                  <button onClick={() => removeLiability(l.id)} style={{ border: "none", background: "none", color: "#A8C29A", cursor: "pointer", padding: 2, flexShrink: 0 }}>
+                  <button onClick={() => removeLiability(l.id)} style={{ border: "none", background: "none", color: "#DDC6BC", cursor: "pointer", padding: 2, flexShrink: 0 }}>
                     <Trash2 size={13} />
                   </button>
                 </div>
@@ -3629,29 +3629,29 @@ export default function MonthlyLedger() {
               placeholder="负债名称，如 房贷"
               value={liabilityForm.name}
               onChange={e => setLiabilityForm({ ...liabilityForm, name: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 140px", outline: "none" }}
+              style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 140px", outline: "none" }}
             />
             <input
               type="number"
               placeholder="金额"
               value={liabilityForm.value}
               onChange={e => setLiabilityForm({ ...liabilityForm, value: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 80px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
+              style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 80px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
             />
             <button
               onClick={addLiability}
               style={{
-                background: "#A8382E", color: "#FFFFFF", border: "none", borderRadius: 8,
+                background: "#B8574A", color: "#FFFFFF", border: "none", borderRadius: 8,
                 padding: "0 12px", display: "flex", alignItems: "center", cursor: "pointer", flexShrink: 0,
-                boxShadow: "0 2px 6px rgba(168,56,46,0.4)",
+                boxShadow: "0 2px 6px rgba(184,87,74,0.4)",
               }}
             >
               <Plus size={15} />
             </button>
           </div>
-          {liabilityError && <div style={{ color: "#A8382E", fontSize: 12 }}>{liabilityError}</div>}
+          {liabilityError && <div style={{ color: "#B8574A", fontSize: 12 }}>{liabilityError}</div>}
 
-          <div style={{ fontSize: 10.5, color: "#5A7360", marginTop: 10, borderTop: "1px dashed #A8C29A", paddingTop: 10 }}>
+          <div style={{ fontSize: 10.5, color: "#9C8478", marginTop: 10, borderTop: "1px dashed #DDC6BC", paddingTop: 10 }}>
             提示：信用卡欠款可以在这里手动记一笔，和"记账"里的还款计划分开管理
           </div>
         </div>
@@ -3661,19 +3661,19 @@ export default function MonthlyLedger() {
         {activeTab === "funds" && (
         <>
         {/* Fund total summary */}
-        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", color: "#12241A", padding: "18px 20px", borderTop: "none", position: "relative", overflow: "hidden" }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #DDC6BC", color: "#5C3E3E", padding: "18px 20px", borderTop: "none", position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", top: -14, right: -6, fontSize: 70, opacity: 0.08, transform: "rotate(15deg)" }}>⚽</div>
-          <div style={{ fontSize: 11, letterSpacing: 2, opacity: 0.6, marginBottom: 8, color: "#5A7360" }}>
+          <div style={{ fontSize: 11, letterSpacing: 2, opacity: 0.6, marginBottom: 8, color: "#9C8478" }}>
             基金总额
           </div>
-          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: 26, color: "#1F4A2E" }}>
+          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: 26, color: "#A37070" }}>
             ${formatMoney(totalSaved)}
           </div>
         </div>
 
-        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", borderRadius: "4px 4px 20px 20px", padding: "16px 18px" }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #DDC6BC", borderTop: "none", borderRadius: "4px 4px 20px 20px", padding: "16px 18px" }}>
           {savingsGoals.length === 0 && (
-            <div style={{ fontSize: 12.5, color: "#5A7360", textAlign: "center", padding: "10px 0" }}>
+            <div style={{ fontSize: 12.5, color: "#9C8478", textAlign: "center", padding: "10px 0" }}>
               还没有基金，在下面创建一个吧
             </div>
           )}
@@ -3683,21 +3683,21 @@ export default function MonthlyLedger() {
             const log = [...(g.usageLog || [])].sort((a, b) => b.date.localeCompare(a.date));
             return (
               <div key={g.id} style={{
-                border: "1px solid #D4E4C8", borderRadius: 8, padding: "12px 14px", marginBottom: 12, background: "#E4EEDC",
+                border: "1px solid #EDE0D2", borderRadius: 8, padding: "12px 14px", marginBottom: 12, background: "#F7EFE5",
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
                   <div style={{ flex: "1 1 80px", minWidth: 0, fontSize: 14, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {g.name}
                   </div>
-                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12.5, color: "#12241A" }}>
+                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12.5, color: "#5C3E3E" }}>
                     ${formatMoney(g.saved)} / ${formatMoney(g.target)}
                   </div>
-                  <button onClick={() => removeGoal(g.id)} style={{ border: "none", background: "none", color: "#A8C29A", cursor: "pointer", padding: 2, flexShrink: 0 }}>
+                  <button onClick={() => removeGoal(g.id)} style={{ border: "none", background: "none", color: "#DDC6BC", cursor: "pointer", padding: 2, flexShrink: 0 }}>
                     <Trash2 size={13} />
                   </button>
                 </div>
-                <div style={{ height: 6, borderRadius: 4, background: "#D4E4C8", overflow: "hidden", marginBottom: 10 }}>
-                  <div style={{ height: "100%", width: `${pct}%`, background: "#3A8C4A", borderRadius: 4, transition: "width 0.3s" }} />
+                <div style={{ height: 6, borderRadius: 4, background: "#EDE0D2", overflow: "hidden", marginBottom: 10 }}>
+                  <div style={{ height: "100%", width: `${pct}%`, background: "#7A9670", borderRadius: 4, transition: "width 0.3s" }} />
                 </div>
 
                 <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
@@ -3706,11 +3706,11 @@ export default function MonthlyLedger() {
                     placeholder="存入金额"
                     value={contribInput[g.id] ?? ""}
                     onChange={e => setContribInput(prev => ({ ...prev, [g.id]: e.target.value }))}
-                    style={{ border: "1px solid #A8C29A", borderRadius: 6, padding: "5px 8px", fontSize: 12, flex: 1, fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
+                    style={{ border: "1px solid #DDC6BC", borderRadius: 6, padding: "5px 8px", fontSize: 12, flex: 1, fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
                   />
                   <button
                     onClick={() => addContribution(g.id)}
-                    style={{ background: "#3A8C4A", color: "#FFFFFF", border: "none", borderRadius: 6, padding: "0 12px", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
+                    style={{ background: "#7A9670", color: "#FFFFFF", border: "none", borderRadius: 6, padding: "0 12px", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
                   >
                     存入
                   </button>
@@ -3722,11 +3722,11 @@ export default function MonthlyLedger() {
                     placeholder="使用金额"
                     value={usageInput[g.id] ?? ""}
                     onChange={e => setUsageInput(prev => ({ ...prev, [g.id]: e.target.value }))}
-                    style={{ border: "1px solid #A8C29A", borderRadius: 6, padding: "5px 8px", fontSize: 12, flex: 1, fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
+                    style={{ border: "1px solid #DDC6BC", borderRadius: 6, padding: "5px 8px", fontSize: 12, flex: 1, fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
                   />
                   <button
                     onClick={() => useFund(g.id)}
-                    style={{ background: "#B8912E", color: "#FFFFFF", border: "none", borderRadius: 6, padding: "0 12px", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
+                    style={{ background: "#B89968", color: "#FFFFFF", border: "none", borderRadius: 6, padding: "0 12px", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
                   >
                     使用
                   </button>
@@ -3734,7 +3734,7 @@ export default function MonthlyLedger() {
 
                 {(cards.length > 0 || accounts.length > 0) && (
                   <div style={{ marginBottom: 6 }}>
-                    <div style={{ fontSize: 10.5, color: "#5A7360", marginBottom: 4 }}>取到哪张卡/账户（仅作记录，不影响现金流）</div>
+                    <div style={{ fontSize: 10.5, color: "#9C8478", marginBottom: 4 }}>取到哪张卡/账户（仅作记录，不影响现金流）</div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                       {cards.map(c => {
                         const selected = usageTarget[g.id]?.kind === "card" && usageTarget[g.id]?.id === c.id;
@@ -3744,9 +3744,9 @@ export default function MonthlyLedger() {
                             onClick={() => setUsageTarget(prev => ({ ...prev, [g.id]: selected ? null : { kind: "card", id: c.id } }))}
                             style={{
                               padding: "4px 10px", borderRadius: 20, fontSize: 11.5, cursor: "pointer",
-                              border: `1.5px solid ${selected ? "#B8912E" : "#A8C29A"}`,
-                              background: selected ? "#B8912E" : "transparent",
-                              color: selected ? "#FFFFFF" : "#1F4A2E", fontWeight: selected ? 700 : 400,
+                              border: `1.5px solid ${selected ? "#B89968" : "#DDC6BC"}`,
+                              background: selected ? "#B89968" : "transparent",
+                              color: selected ? "#FFFFFF" : "#A37070", fontWeight: selected ? 700 : 400,
                             }}
                           >
                             {c.name}
@@ -3761,9 +3761,9 @@ export default function MonthlyLedger() {
                             onClick={() => setUsageTarget(prev => ({ ...prev, [g.id]: selected ? null : { kind: "account", id: a.id } }))}
                             style={{
                               padding: "4px 10px", borderRadius: 20, fontSize: 11.5, cursor: "pointer",
-                              border: `1.5px solid ${selected ? "#3A8C4A" : "#A8C29A"}`,
-                              background: selected ? "#3A8C4A" : "transparent",
-                              color: selected ? "#FFFFFF" : "#1F4A2E", fontWeight: selected ? 700 : 400,
+                              border: `1.5px solid ${selected ? "#7A9670" : "#DDC6BC"}`,
+                              background: selected ? "#7A9670" : "transparent",
+                              color: selected ? "#FFFFFF" : "#A37070", fontWeight: selected ? 700 : 400,
                             }}
                           >
                             {a.name}
@@ -3773,20 +3773,20 @@ export default function MonthlyLedger() {
                     </div>
                   </div>
                 )}
-                {usageError[g.id] && <div style={{ color: "#A8382E", fontSize: 11, marginTop: 5 }}>{usageError[g.id]}</div>}
-                <div style={{ fontSize: 10.5, color: "#5A7360", marginTop: 4 }}>
+                {usageError[g.id] && <div style={{ color: "#B8574A", fontSize: 11, marginTop: 5 }}>{usageError[g.id]}</div>}
+                <div style={{ fontSize: 10.5, color: "#9C8478", marginTop: 4 }}>
                   使用只会扣减基金余额，不会影响"记账"的现金流和转账
                 </div>
 
                 {log.length > 0 && (
-                  <div style={{ marginTop: 10, borderTop: "1px dashed #A8C29A", paddingTop: 8 }}>
-                    <div style={{ fontSize: 10.5, color: "#5A7360", marginBottom: 4 }}>使用记录</div>
+                  <div style={{ marginTop: 10, borderTop: "1px dashed #DDC6BC", paddingTop: 8 }}>
+                    <div style={{ fontSize: 10.5, color: "#9C8478", marginBottom: 4 }}>使用记录</div>
                     {log.slice(0, 5).map(u => (
-                      <div key={u.id} style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "#12241A", padding: "2px 0" }}>
+                      <div key={u.id} style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "#5C3E3E", padding: "2px 0" }}>
                         <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                          {u.date}{u.targetName && <span style={{ color: "#5A7360" }}> · {u.targetName}</span>}
+                          {u.date}{u.targetName && <span style={{ color: "#9C8478" }}> · {u.targetName}</span>}
                         </span>
-                        <span style={{ fontFamily: "'JetBrains Mono', monospace", color: "#B8912E", fontWeight: 600 }}>-${formatMoney(u.amount)}</span>
+                        <span style={{ fontFamily: "'JetBrains Mono', monospace", color: "#B89968", fontWeight: 600 }}>-${formatMoney(u.amount)}</span>
                       </div>
                     ))}
                   </div>
@@ -3795,33 +3795,33 @@ export default function MonthlyLedger() {
             );
           })}
 
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8, borderTop: savingsGoals.length > 0 ? "1px dashed #A8C29A" : "none", paddingTop: savingsGoals.length > 0 ? 14 : 0 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8, borderTop: savingsGoals.length > 0 ? "1px dashed #DDC6BC" : "none", paddingTop: savingsGoals.length > 0 ? 14 : 0 }}>
             <input
               type="text"
               placeholder="基金名称，如 应急基金"
               value={goalForm.name}
               onChange={e => setGoalForm({ ...goalForm, name: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 130px", outline: "none" }}
+              style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 130px", outline: "none" }}
             />
             <input
               type="number"
               placeholder="目标金额"
               value={goalForm.target}
               onChange={e => setGoalForm({ ...goalForm, target: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 80px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
+              style={{ border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 80px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
             />
             <button
               onClick={addGoal}
               style={{
-                background: "#3A8C4A", color: "#FFFFFF", border: "none", borderRadius: 8,
+                background: "#7A9670", color: "#FFFFFF", border: "none", borderRadius: 8,
                 padding: "0 12px", display: "flex", alignItems: "center", cursor: "pointer", flexShrink: 0,
-                boxShadow: "0 2px 6px rgba(58,140,74,0.4)",
+                boxShadow: "0 2px 6px rgba(122,150,112,0.4)",
               }}
             >
               <Plus size={15} />
             </button>
           </div>
-          {goalError && <div style={{ color: "#A8382E", fontSize: 12 }}>{goalError}</div>}
+          {goalError && <div style={{ color: "#B8574A", fontSize: 12 }}>{goalError}</div>}
         </div>
         </>
         )}
@@ -3833,7 +3833,7 @@ export default function MonthlyLedger() {
 function SummaryCell({ icon, label, value, tone }) {
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "#12241A", marginBottom: 3 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "#5C3E3E", marginBottom: 3 }}>
         {icon} {label}
       </div>
       <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: 18, color: tone }}>
@@ -3846,9 +3846,9 @@ function SummaryCell({ icon, label, value, tone }) {
 function LabeledInput({ label, value, onChange, placeholder, prefix, suffix }) {
   return (
     <div>
-      <div style={{ fontSize: 11, color: "#5A7360", marginBottom: 4 }}>{label}</div>
-      <div style={{ display: "flex", alignItems: "center", border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 10px" }}>
-        {prefix && <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, color: "#12241A", marginRight: 3 }}>{prefix}</span>}
+      <div style={{ fontSize: 11, color: "#9C8478", marginBottom: 4 }}>{label}</div>
+      <div style={{ display: "flex", alignItems: "center", border: "1px solid #DDC6BC", borderRadius: 8, padding: "7px 10px" }}>
+        {prefix && <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, color: "#5C3E3E", marginRight: 3 }}>{prefix}</span>}
         <input
           type="number"
           placeholder={placeholder}
@@ -3856,13 +3856,13 @@ function LabeledInput({ label, value, onChange, placeholder, prefix, suffix }) {
           onChange={e => onChange(e.target.value === "" ? null : parseFloat(e.target.value))}
           style={{ border: "none", outline: "none", width: "100%", fontFamily: "'JetBrains Mono', monospace", fontSize: 13, background: "transparent" }}
         />
-        {suffix && <span style={{ fontSize: 12, color: "#12241A", marginLeft: 3 }}>{suffix}</span>}
+        {suffix && <span style={{ fontSize: 12, color: "#5C3E3E", marginLeft: 3 }}>{suffix}</span>}
       </div>
     </div>
   );
 }
 
 const navBtnStyle = {
-  background: "rgba(253,243,241,0.12)", border: "none", color: "#DCE8D2",
+  background: "rgba(253,243,241,0.12)", border: "none", color: "#F3E8DC",
   width: 26, height: 26, borderRadius: 6, cursor: "pointer", fontSize: 16, lineHeight: 1,
 };
