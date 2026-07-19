@@ -236,6 +236,7 @@ export default function MonthlyLedger() {
   // search & filter for the entries list — keyword, category, and amount range
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedTrendCategory, setSelectedTrendCategory] = useState(null);
   const [filterCategory, setFilterCategory] = useState("");
   const [filterMinAmount, setFilterMinAmount] = useState("");
   const [filterMaxAmount, setFilterMaxAmount] = useState("");
@@ -536,6 +537,40 @@ export default function MonthlyLedger() {
       .sort((a, b) => b.amount - a.amount);
   }, [entries, transfers, splitAdjustments]);
 
+  // rent — varies month to month, so it's stored per-month; editing one month never touches another.
+  // declared here (before computeTotalSpentForMonth/monthlyTrend) so the trend chart can safely
+  // include rent in its month-by-month totals too
+  const [rentByMonth, setRentByMonth] = useState({});
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await window.storage.get("ledger:rent", false);
+        if (res && res.value) {
+          const v = JSON.parse(res.value);
+          if (v && (("amount" in v) || ("day" in v))) {
+            // migrate legacy single-value shape: apply it to the current real-world month only
+            setRentByMonth({ [todayISO().slice(0, 7)]: { amount: v.amount ?? null, day: v.day ?? null } });
+          } else if (v) {
+            setRentByMonth(v);
+          }
+        }
+      } catch (e) {}
+    })();
+  }, []);
+  useEffect(() => {
+    (async () => {
+      try { await window.storage.set("ledger:rent", JSON.stringify(rentByMonth), false); } catch (e) {}
+    })();
+  }, [rentByMonth]);
+
+  const rent = rentByMonth[selectedMonth] || { amount: null, day: null };
+  function updateRent(field, value) {
+    setRentByMonth(prev => ({
+      ...prev,
+      [selectedMonth]: { ...(prev[selectedMonth] || { amount: null, day: null }), [field]: value },
+    }));
+  }
+
   // total spending for an arbitrary month (used by the trend tab) — mirrors the logic used for
   // the selected month's totalsByCategory/recurringTotal, but generalized to any month
   function computeTotalSpentForMonth(month) {
@@ -554,7 +589,25 @@ export default function MonthlyLedger() {
     transfers.filter(t => monthKey(t.date) === month).forEach(t => {
       if (t.direction === "out" && t.countAsExpense && t.category) total += t.amount;
     });
+    const monthRent = rentByMonth[month];
+    if (monthRent && monthRent.amount) total += monthRent.amount;
     return total;
+  }
+
+  // same idea as computeTotalSpentForMonth, but broken down by category — used by the
+  // per-category trend chart so you can see which categories are driving the change month to month
+  function computeCategoryTotalsForMonth(month) {
+    const totals = Object.fromEntries(CATEGORIES.map(c => [c.key, 0]));
+    entries.filter(e => monthKey(e.date) === month).forEach(e => {
+      const net = e.amount - (e.excludedAmount || 0);
+      totals[e.category] = (totals[e.category] || 0) + (e.isRefund ? -net : net);
+    });
+    transfers.filter(t => monthKey(t.date) === month).forEach(t => {
+      if (t.direction === "out" && t.countAsExpense && t.category) {
+        totals[t.category] = (totals[t.category] || 0) + t.amount;
+      }
+    });
+    return totals;
   }
 
   const trendMonths = useMemo(() => {
@@ -566,6 +619,18 @@ export default function MonthlyLedger() {
   const monthlyTrend = useMemo(
     () => trendMonths.map(m => ({ month: m, total: computeTotalSpentForMonth(m) })),
     [trendMonths, entries, recurringExpenses, transfers]
+  );
+
+  // per-category monthly trend — only the categories with at least some spending across the
+  // window get their own line/legend entry, so the chart doesn't get cluttered with all-zero rows
+  const monthlyCategoryTrend = useMemo(
+    () => trendMonths.map(m => ({ month: m, ...computeCategoryTotalsForMonth(m) })),
+    [trendMonths, entries, transfers]
+  );
+
+  const activeTrendCategories = useMemo(
+    () => CATEGORIES.filter(c => monthlyCategoryTrend.some(row => (row[c.key] || 0) > 0)),
+    [monthlyCategoryTrend, CATEGORIES]
   );
 
   const totalsByCategory = useMemo(() => {
@@ -589,9 +654,11 @@ export default function MonthlyLedger() {
     [recurringVirtualEntries]
   );
 
+  // total spending for the month — category spending + subscriptions + rent, so "本月支出" reflects
+  // everything that leaves your pocket this month, not just card/cash purchases
   const totalSpent = useMemo(
-    () => Object.values(totalsByCategory).reduce((a, b) => a + b, 0) + recurringTotal,
-    [totalsByCategory, recurringTotal]
+    () => Object.values(totalsByCategory).reduce((a, b) => a + b, 0) + recurringTotal + (rent.amount || 0),
+    [totalsByCategory, recurringTotal, rent.amount]
   );
 
   const totalsByCard = useMemo(() => {
@@ -666,42 +733,11 @@ export default function MonthlyLedger() {
     setIncomeEntries(prev => prev.filter(i => i.id !== id));
   }
 
-  // rent — varies month to month, so it's stored per-month; editing one month never touches another
-  const [rentByMonth, setRentByMonth] = useState({});
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await window.storage.get("ledger:rent", false);
-        if (res && res.value) {
-          const v = JSON.parse(res.value);
-          if (v && (("amount" in v) || ("day" in v))) {
-            // migrate legacy single-value shape: apply it to the current real-world month only
-            setRentByMonth({ [todayISO().slice(0, 7)]: { amount: v.amount ?? null, day: v.day ?? null } });
-          } else if (v) {
-            setRentByMonth(v);
-          }
-        }
-      } catch (e) {}
-    })();
-  }, []);
-  useEffect(() => {
-    (async () => {
-      try { await window.storage.set("ledger:rent", JSON.stringify(rentByMonth), false); } catch (e) {}
-    })();
-  }, [rentByMonth]);
-
-  const rent = rentByMonth[selectedMonth] || { amount: null, day: null };
-  function updateRent(field, value) {
-    setRentByMonth(prev => ({
-      ...prev,
-      [selectedMonth]: { ...(prev[selectedMonth] || { amount: null, day: null }), [field]: value },
-    }));
-  }
-
   // credit card repayment planning — supports multiple cards
   const [cards, setCards] = useState([]);
   const [startBalanceByMonth, setStartBalanceByMonth] = useState({});
   const [cardForm, setCardForm] = useState({ name: "", dueDay: "", amount: "" });
+  const [newCardType, setNewCardType] = useState("credit"); // "credit" | "account" — for the unified add-card form
   const [cardError, setCardError] = useState("");
 
   useEffect(() => {
@@ -998,14 +1034,16 @@ export default function MonthlyLedger() {
   const totalSaved = useMemo(() => savingsGoals.reduce((a, g) => a + g.saved, 0), [savingsGoals]);
 
 
-  const pieData = CATEGORIES
-    .filter(c => c.key !== "fund")
-    .map(c => ({
-      name: c.label,
-      value: c.key === "subscription" ? (totalsByCategory[c.key] || 0) + recurringTotal : totalsByCategory[c.key],
-      color: c.color,
-    }))
-    .filter(d => d.value > 0);
+  const pieData = [
+    ...CATEGORIES
+      .filter(c => c.key !== "fund")
+      .map(c => ({
+        name: c.label,
+        value: c.key === "subscription" ? (totalsByCategory[c.key] || 0) + recurringTotal : totalsByCategory[c.key],
+        color: c.color,
+      })),
+    { name: "房租", value: rent.amount || 0, color: "#1F4A2E" },
+  ].filter(d => d.value > 0);
 
   function addEntry() {
     const amt = parseFloat(form.amount);
@@ -1204,7 +1242,7 @@ export default function MonthlyLedger() {
     [totalsByCategory]
   );
 
-  const balance = monthlyIncome - totalSpent - (rent.amount || 0) + netTransfers;
+  const balance = monthlyIncome - totalSpent + netTransfers;
 
   // asset management — separate from monthly ledger, tracks net worth over time
   const [assets, setAssets] = useState([]);
@@ -1940,62 +1978,16 @@ export default function MonthlyLedger() {
           </div>
         </div>
 
-        {/* Cash / savings accounts */}
+        {/* Add card — unified credit card + cash/savings account management */}
         <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "16px 18px" }}>
           <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, marginBottom: 6, fontWeight: 700 }}>
-            现金 / 储蓄账户
+            添加卡片
           </div>
-          <div style={{ fontSize: 10.5, color: "#5A7360", marginBottom: 10 }}>
-            这些账户的支出会立即计入现金流，不像信用卡要等还款日
-          </div>
-
-          {accounts.length > 0 && (
-            <div style={{ marginBottom: 12 }}>
-              {accounts.map(a => (
-                <div key={a.id} style={{
-                  display: "flex", alignItems: "center", gap: 8, padding: "8px 10px",
-                  border: "1px solid #D4E4C8", borderRadius: 8, marginBottom: 6, background: "#E4EEDC",
-                }}>
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#3A8C4A", flexShrink: 0 }} />
-                  <div style={{ flex: 1, fontSize: 13, fontWeight: 500 }}>{a.name}</div>
-                  <button onClick={() => removeAccount(a.id)} style={{ border: "none", background: "none", color: "#A8C29A", cursor: "pointer", padding: 2, flexShrink: 0 }}>
-                    <Trash2 size={13} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div style={{ display: "flex", gap: 6 }}>
-            <input
-              type="text"
-              placeholder="账户名称，如 现金 / 招行储蓄卡"
-              value={accountForm.name}
-              onChange={e => setAccountForm({ name: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: 1, outline: "none" }}
-            />
-            <button
-              onClick={addAccount}
-              style={{
-                background: "#3A8C4A", color: "#FFFFFF", border: "none", borderRadius: 8,
-                padding: "0 12px", display: "flex", alignItems: "center", cursor: "pointer", flexShrink: 0,
-                boxShadow: "0 2px 6px rgba(58,140,74,0.4)",
-              }}
-            >
-              <Plus size={15} />
-            </button>
-          </div>
-          {accountError && <div style={{ color: "#A8382E", fontSize: 12, marginTop: 6 }}>{accountError}</div>}
-        </div>
-
-        {/* Credit card cash flow planning */}
-        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "16px 18px" }}>
-          <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, marginBottom: 10, fontWeight: 700 }}>
-            信用卡还款 · 现金流规划
+          <div style={{ fontSize: 10.5, color: "#5A7360", marginBottom: 12 }}>
+            信用卡消费会等到还款日才计入现金流；储蓄/现金卡的支出会立即计入现金流
           </div>
 
-          {/* existing cards */}
-          {cards.length > 0 && (
+          {(cards.length > 0 || accounts.length > 0) && (
             <div style={{ marginBottom: 12 }}>
               {cards.map(c => {
                 const currentAmount = getCardAmount(c, selectedMonth);
@@ -2009,7 +2001,9 @@ export default function MonthlyLedger() {
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{ width: 8, height: 8, borderRadius: 2, background: isEnded ? "#A8C29A" : "#B8912E", flexShrink: 0 }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</div>
+                        <div style={{ fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {c.name} <span style={{ fontSize: 10, color: "#B8912E", fontWeight: 400 }}>信用卡</span>
+                        </div>
                         <div style={{ fontSize: 11, color: "#5A7360" }}>
                           本月已刷 ${formatMoney(totalsByCard[c.id] || 0)}
                           {isEnded && ` · 已于${c.endMonth}停用`}
@@ -2089,44 +2083,118 @@ export default function MonthlyLedger() {
                   </div>
                 );
               })}
+
+              {accounts.map(a => (
+                <div key={a.id} style={{
+                  display: "flex", alignItems: "center", gap: 8, padding: "8px 10px",
+                  border: "1px solid #D4E4C8", borderRadius: 8, marginBottom: 6, background: "#E4EEDC",
+                }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#3A8C4A", flexShrink: 0 }} />
+                  <div style={{ flex: 1, fontSize: 13, fontWeight: 500 }}>
+                    {a.name} <span style={{ fontSize: 10, color: "#3A8C4A", fontWeight: 400 }}>储蓄/现金卡</span>
+                  </div>
+                  <button onClick={() => removeAccount(a.id)} style={{ border: "none", background: "none", color: "#A8C29A", cursor: "pointer", padding: 2, flexShrink: 0 }}>
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
 
-          {/* add card form */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
-            <input
-              type="text"
-              placeholder="卡片名称"
-              value={cardForm.name}
-              onChange={e => setCardForm({ ...cardForm, name: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 90px", outline: "none" }}
-            />
-            <input
-              type="number"
-              placeholder="还款日"
-              value={cardForm.dueDay}
-              onChange={e => setCardForm({ ...cardForm, dueDay: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 60px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
-            />
-            <input
-              type="number"
-              placeholder="金额"
-              value={cardForm.amount}
-              onChange={e => setCardForm({ ...cardForm, amount: e.target.value })}
-              style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 70px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
-            />
+          {/* type toggle for the add form below */}
+          <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
             <button
-              onClick={addCard}
+              onClick={() => setNewCardType("credit")}
               style={{
-                background: "#B8912E", color: "#FFFFFF", border: "none", borderRadius: 8,
-                padding: "0 12px", display: "flex", alignItems: "center", cursor: "pointer", flexShrink: 0,
-                boxShadow: "0 2px 6px rgba(184,145,46,0.4)",
+                flex: 1, padding: "7px 0", borderRadius: 8, cursor: "pointer", fontSize: 12.5, fontWeight: 600,
+                border: `1.5px solid ${newCardType === "credit" ? "#B8912E" : "#A8C29A"}`,
+                background: newCardType === "credit" ? "#B8912E" : "transparent",
+                color: newCardType === "credit" ? "#FFFFFF" : "#1F4A2E",
               }}
             >
-              <Plus size={15} />
+              信用卡
+            </button>
+            <button
+              onClick={() => setNewCardType("account")}
+              style={{
+                flex: 1, padding: "7px 0", borderRadius: 8, cursor: "pointer", fontSize: 12.5, fontWeight: 600,
+                border: `1.5px solid ${newCardType === "account" ? "#3A8C4A" : "#A8C29A"}`,
+                background: newCardType === "account" ? "#3A8C4A" : "transparent",
+                color: newCardType === "account" ? "#FFFFFF" : "#1F4A2E",
+              }}
+            >
+              储蓄 / 现金卡
             </button>
           </div>
-          {cardError && <div style={{ color: "#A8382E", fontSize: 12, marginBottom: 10 }}>{cardError}</div>}
+
+          {newCardType === "credit" ? (
+            <>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+                <input
+                  type="text"
+                  placeholder="卡片名称"
+                  value={cardForm.name}
+                  onChange={e => setCardForm({ ...cardForm, name: e.target.value })}
+                  style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 90px", outline: "none" }}
+                />
+                <input
+                  type="number"
+                  placeholder="还款日"
+                  value={cardForm.dueDay}
+                  onChange={e => setCardForm({ ...cardForm, dueDay: e.target.value })}
+                  style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 60px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
+                />
+                <input
+                  type="number"
+                  placeholder="金额"
+                  value={cardForm.amount}
+                  onChange={e => setCardForm({ ...cardForm, amount: e.target.value })}
+                  style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: "1 1 70px", fontFamily: "'JetBrains Mono', monospace", outline: "none" }}
+                />
+                <button
+                  onClick={addCard}
+                  style={{
+                    background: "#B8912E", color: "#FFFFFF", border: "none", borderRadius: 8,
+                    padding: "0 12px", display: "flex", alignItems: "center", cursor: "pointer", flexShrink: 0,
+                    boxShadow: "0 2px 6px rgba(184,145,46,0.4)",
+                  }}
+                >
+                  <Plus size={15} />
+                </button>
+              </div>
+              {cardError && <div style={{ color: "#A8382E", fontSize: 12 }}>{cardError}</div>}
+            </>
+          ) : (
+            <>
+              <div style={{ display: "flex", gap: 6 }}>
+                <input
+                  type="text"
+                  placeholder="账户名称，如 现金 / 招行储蓄卡"
+                  value={accountForm.name}
+                  onChange={e => setAccountForm({ name: e.target.value })}
+                  style={{ border: "1px solid #A8C29A", borderRadius: 8, padding: "7px 9px", fontSize: 12.5, flex: 1, outline: "none" }}
+                />
+                <button
+                  onClick={addAccount}
+                  style={{
+                    background: "#3A8C4A", color: "#FFFFFF", border: "none", borderRadius: 8,
+                    padding: "0 12px", display: "flex", alignItems: "center", cursor: "pointer", flexShrink: 0,
+                    boxShadow: "0 2px 6px rgba(58,140,74,0.4)",
+                  }}
+                >
+                  <Plus size={15} />
+                </button>
+              </div>
+              {accountError && <div style={{ color: "#A8382E", fontSize: 12, marginTop: 6 }}>{accountError}</div>}
+            </>
+          )}
+        </div>
+
+        {/* Cash flow planning — unaffected by the card/account list above; still reads the same data */}
+        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "16px 18px" }}>
+          <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, marginBottom: 10, fontWeight: 700 }}>
+            现金流规划
+          </div>
 
           <div style={{ marginBottom: 12 }}>
             <LabeledInput label="月初起始余额（可选，每月单独）" value={startBalance} onChange={v => updateStartBalance(v)} placeholder="0.00" prefix="$" />
@@ -3140,7 +3208,7 @@ export default function MonthlyLedger() {
         </div>
 
         {/* Month-by-month breakdown */}
-        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", borderRadius: "4px 4px 20px 20px", padding: "16px 18px" }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "16px 18px" }}>
           <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700, marginBottom: 10 }}>
             逐月明细
           </div>
@@ -3173,6 +3241,109 @@ export default function MonthlyLedger() {
               </div>
             );
           })}
+        </div>
+
+        {/* Per-category monthly trend */}
+        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", borderRadius: "4px 4px 20px 20px", padding: "16px 14px" }}>
+          <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>
+            分类月度走势
+          </div>
+          <div style={{ fontSize: 10.5, color: "#5A7360", marginBottom: 12 }}>
+            看看哪些分类的花销在涨、哪些在降
+          </div>
+
+          {activeTrendCategories.length === 0 ? (
+            <div style={{ fontSize: 12.5, color: "#5A7360", textAlign: "center", padding: "12px 0" }}>
+              这几个月还没有分类支出记录
+            </div>
+          ) : (() => {
+            const currentKey = (selectedTrendCategory && activeTrendCategories.some(c => c.key === selectedTrendCategory))
+              ? selectedTrendCategory
+              : activeTrendCategories[0].key;
+            const currentCat = CAT_MAP[currentKey];
+            return (
+              <>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+                  {activeTrendCategories.map(c => (
+                    <button
+                      key={c.key}
+                      onClick={() => setSelectedTrendCategory(c.key)}
+                      style={{
+                        padding: "5px 12px", borderRadius: 20, fontSize: 12, cursor: "pointer",
+                        border: `1.5px solid ${currentKey === c.key ? c.color : "#A8C29A"}`,
+                        background: currentKey === c.key ? c.color : "transparent",
+                        color: currentKey === c.key ? "#FFFFFF" : "#1F4A2E",
+                        fontWeight: currentKey === c.key ? 700 : 400,
+                        transition: "all 0.15s",
+                      }}
+                    >
+                      {c.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div style={{ height: 200 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={monthlyCategoryTrend} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
+                      <CartesianGrid stroke="#D4E4C8" vertical={false} />
+                      <XAxis
+                        dataKey="month"
+                        tickFormatter={m => m.slice(5)}
+                        tick={{ fontSize: 11, fill: "#5A7360" }}
+                        axisLine={{ stroke: "#A8C29A" }}
+                        tickLine={false}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 10, fill: "#5A7360" }}
+                        axisLine={false}
+                        tickLine={false}
+                        width={44}
+                        tickFormatter={v => `$${v}`}
+                      />
+                      <Tooltip formatter={(v) => [`$${formatMoney(v)}`, currentCat?.label]} labelFormatter={(m) => m} />
+                      <Line
+                        type="monotone"
+                        dataKey={currentKey}
+                        stroke={currentCat?.color}
+                        strokeWidth={2.5}
+                        dot={{ r: 4, fill: currentCat?.color }}
+                        activeDot={{ r: 6 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div style={{ borderTop: "1px dashed #D4E4C8", marginTop: 12, paddingTop: 12 }}>
+                  {activeTrendCategories.map(c => {
+                    const curVal = monthlyCategoryTrend[monthlyCategoryTrend.length - 1][c.key] || 0;
+                    const prevVal = monthlyCategoryTrend.length > 1 ? (monthlyCategoryTrend[monthlyCategoryTrend.length - 2][c.key] || 0) : null;
+                    const diff = prevVal !== null ? curVal - prevVal : null;
+                    return (
+                      <div
+                        key={c.key}
+                        onClick={() => setSelectedTrendCategory(c.key)}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 8, padding: "6px 0", cursor: "pointer",
+                          opacity: currentKey === c.key ? 1 : 0.75,
+                        }}
+                      >
+                        <span style={{ width: 8, height: 8, borderRadius: 2, background: c.color, flexShrink: 0 }} />
+                        <div style={{ flex: 1, fontSize: 12.5, color: "#12241A", fontWeight: currentKey === c.key ? 700 : 400 }}>{c.label}</div>
+                        {diff !== null && diff !== 0 && (
+                          <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', monospace", color: diff > 0 ? "#A8382E" : "#3A8C4A" }}>
+                            {diff > 0 ? "▲" : "▼"} ${formatMoney(Math.abs(diff))}
+                          </div>
+                        )}
+                        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: 13, color: "#1F4A2E", minWidth: 70, textAlign: "right" }}>
+                          ${formatMoney(curVal)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            );
+          })()}
         </div>
         </>
         )}
