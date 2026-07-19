@@ -236,6 +236,12 @@ export default function MonthlyLedger() {
   // search & filter for the entries list — keyword, category, and amount range
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+
+  // collapse/expand for each block in the Ledger tab
+  const [collapsedSections, setCollapsedSections] = useState({});
+  function toggleSection(key) {
+    setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }));
+  }
   const [selectedTrendCategory, setSelectedTrendCategory] = useState(null);
   const [filterCategory, setFilterCategory] = useState("");
   const [filterMinAmount, setFilterMinAmount] = useState("");
@@ -505,6 +511,22 @@ export default function MonthlyLedger() {
   function writeOffSplit(person, currentAmount) {
     // forgive the entire remaining balance for this person
     addSplitAdjustment(person, currentAmount, "核销");
+  }
+
+  // "已转账" — the person paid you back, so create a real transfer-in record for it (shows up
+  // in the 转账 tab like any other transfer) instead of a silent adjustment. splitSummary already
+  // nets out transfers-in against what's owed, so this naturally clears their balance.
+  function markSplitAsTransferred(person, amount) {
+    setTransfers(prev => [...prev, {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      direction: "in",
+      person,
+      amount,
+      note: "分摊还款",
+      date: todayISO(),
+      countAsExpense: false,
+      category: "",
+    }]);
   }
 
   // "谁该分摊多少钱" — running total of split-expense amounts owed by each person,
@@ -1689,8 +1711,12 @@ export default function MonthlyLedger() {
 
         {/* Income — freely add any number of income entries */}
         <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "16px 18px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
+          <div
+            onClick={() => toggleSection("income")}
+            style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: collapsedSections.income ? 0 : 10, cursor: "pointer" }}
+          >
             <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 10, color: "#5A7360" }}>{collapsedSections.income ? "▸" : "▾"}</span>
               <Wallet size={14} /> 本月收入
             </div>
             <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, color: "#3A8C4A" }}>
@@ -1698,6 +1724,8 @@ export default function MonthlyLedger() {
             </div>
           </div>
 
+          {!collapsedSections.income && (
+          <>
           {monthIncomeEntries.length > 0 && (
             <div style={{ marginBottom: 12 }}>
               {monthIncomeEntries.map(inc => (
@@ -1759,50 +1787,65 @@ export default function MonthlyLedger() {
             </button>
           </div>
           {incomeError && <div style={{ color: "#A8382E", fontSize: 12 }}>{incomeError}</div>}
+          </>
+          )}
         </div>
 
         {/* Rent setup — varies month to month; editing only changes the selected month */}
-        <div style={{
-          background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none",
-          padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap",
-        }}>
-          <div>
-            <div style={{ fontSize: 13, color: "#12241A", display: "flex", alignItems: "center", gap: 6 }}>
-              <Wallet size={14} />
-              房租（{selectedMonth}，走现金流）
+        <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "14px 18px" }}>
+          <div
+            onClick={() => toggleSection("rent")}
+            style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, cursor: "pointer" }}
+          >
+            <div>
+              <div style={{ fontSize: 13, color: "#12241A", display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 10, color: "#5A7360" }}>{collapsedSections.rent ? "▸" : "▾"}</span>
+                <Wallet size={14} />
+                房租（{selectedMonth}，走现金流）
+              </div>
+              {!collapsedSections.rent && (
+                <div style={{ fontSize: 10.5, color: "#5A7360", marginTop: 2 }}>
+                  每月单独填写，不影响其他月份
+                </div>
+              )}
             </div>
-            <div style={{ fontSize: 10.5, color: "#5A7360", marginTop: 2 }}>
-              每月单独填写，不影响其他月份
-            </div>
+            {collapsedSections.rent && rent.amount && (
+              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, color: "#1F4A2E" }}>
+                ${formatMoney(rent.amount)}
+              </div>
+            )}
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <input
-                type="number"
-                placeholder="日期"
-                value={rent.day ?? ""}
-                onChange={e => updateRent("day", e.target.value === "" ? null : parseInt(e.target.value, 10))}
-                style={{
-                  width: 44, border: "none", borderBottom: "1px solid #A8C29A", background: "transparent",
-                  fontFamily: "'JetBrains Mono', monospace", fontSize: 14, textAlign: "right", outline: "none", padding: "2px 0",
-                }}
-              />
-              <span style={{ fontSize: 12, color: "#12241A" }}>日</span>
+
+          {!collapsedSections.rent && (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <input
+                  type="number"
+                  placeholder="日期"
+                  value={rent.day ?? ""}
+                  onChange={e => updateRent("day", e.target.value === "" ? null : parseInt(e.target.value, 10))}
+                  style={{
+                    width: 44, border: "none", borderBottom: "1px solid #A8C29A", background: "transparent",
+                    fontFamily: "'JetBrains Mono', monospace", fontSize: 14, textAlign: "right", outline: "none", padding: "2px 0",
+                  }}
+                />
+                <span style={{ fontSize: 12, color: "#12241A" }}>日</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13 }}>$</span>
+                <input
+                  type="number"
+                  placeholder="金额"
+                  value={rent.amount ?? ""}
+                  onChange={e => updateRent("amount", e.target.value === "" ? null : parseFloat(e.target.value))}
+                  style={{
+                    width: 90, border: "none", borderBottom: "1px solid #A8C29A", background: "transparent",
+                    fontFamily: "'JetBrains Mono', monospace", fontSize: 14, textAlign: "right", outline: "none", padding: "2px 0",
+                  }}
+                />
+              </div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13 }}>$</span>
-              <input
-                type="number"
-                placeholder="金额"
-                value={rent.amount ?? ""}
-                onChange={e => updateRent("amount", e.target.value === "" ? null : parseFloat(e.target.value))}
-                style={{
-                  width: 90, border: "none", borderBottom: "1px solid #A8C29A", background: "transparent",
-                  fontFamily: "'JetBrains Mono', monospace", fontSize: 14, textAlign: "right", outline: "none", padding: "2px 0",
-                }}
-              />
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Summary strip - stamped ledger balance */}
@@ -1825,32 +1868,47 @@ export default function MonthlyLedger() {
 
         {/* Chart */}
         {pieData.length > 0 && (
-          <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "10px 8px 4px" }}>
-            <div style={{ height: 190 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={48} outerRadius={72} paddingAngle={3}>
-                    {pieData.map((d, i) => <Cell key={i} fill={d.color} stroke="#FFFFFF" strokeWidth={2} />)}
-                  </Pie>
-                  <Tooltip formatter={(v) => `$${formatMoney(v)}`} />
-                </PieChart>
-              </ResponsiveContainer>
+          <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: collapsedSections.chart ? "10px 16px" : "10px 8px 4px" }}>
+            <div
+              onClick={() => toggleSection("chart")}
+              style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", padding: collapsedSections.chart ? 0 : "0 8px", fontSize: 12.5, color: "#12241A", fontWeight: 700, letterSpacing: 1 }}
+            >
+              <span style={{ fontSize: 10, color: "#5A7360" }}>{collapsedSections.chart ? "▸" : "▾"}</span>
+              支出分布
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", justifyContent: "center", paddingBottom: 10, fontSize: 12 }}>
-              {pieData.map(d => (
-                <div key={d.name} style={{ display: "flex", alignItems: "center", gap: 5, color: "#12241A" }}>
-                  <span style={{ width: 8, height: 8, borderRadius: 2, background: d.color, display: "inline-block" }} />
-                  {d.name} ${formatMoney(d.value)}
+            {!collapsedSections.chart && (
+              <>
+                <div style={{ height: 190 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={48} outerRadius={72} paddingAngle={3}>
+                        {pieData.map((d, i) => <Cell key={i} fill={d.color} stroke="#FFFFFF" strokeWidth={2} />)}
+                      </Pie>
+                      <Tooltip formatter={(v) => `$${formatMoney(v)}`} />
+                    </PieChart>
+                  </ResponsiveContainer>
                 </div>
-              ))}
-            </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", justifyContent: "center", paddingBottom: 10, fontSize: 12 }}>
+                  {pieData.map(d => (
+                    <div key={d.name} style={{ display: "flex", alignItems: "center", gap: 5, color: "#12241A" }}>
+                      <span style={{ width: 8, height: 8, borderRadius: 2, background: d.color, display: "inline-block" }} />
+                      {d.name} ${formatMoney(d.value)}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         )}
 
         {/* Budget planning — synced with the ledger's category spending for the selected month */}
         <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "16px 18px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-            <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700 }}>
+          <div
+            onClick={() => toggleSection("budget")}
+            style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: collapsedSections.budget ? 0 : 4, cursor: "pointer" }}
+          >
+            <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 10, color: "#5A7360" }}>{collapsedSections.budget ? "▸" : "▾"}</span>
               预算 · {selectedMonth}
             </div>
             {totalBudget > 0 && (
@@ -1860,6 +1918,8 @@ export default function MonthlyLedger() {
             )}
           </div>
 
+          {!collapsedSections.budget && (
+          <>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8, flexWrap: "wrap" }}>
             <div style={{ fontSize: 11, color: "#5A7360" }}>
               {hasPrevMonthData
@@ -1976,13 +2036,23 @@ export default function MonthlyLedger() {
             </div>
             {categoryError && <div style={{ color: "#A8382E", fontSize: 11, marginTop: 6 }}>{categoryError}</div>}
           </div>
+          </>
+          )}
         </div>
 
         {/* Add card — unified credit card + cash/savings account management */}
         <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "16px 18px" }}>
-          <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, marginBottom: 6, fontWeight: 700 }}>
-            添加卡片
+          <div
+            onClick={() => toggleSection("cards")}
+            style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: collapsedSections.cards ? 0 : 6, cursor: "pointer" }}
+          >
+            <span style={{ fontSize: 10, color: "#5A7360" }}>{collapsedSections.cards ? "▸" : "▾"}</span>
+            <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700 }}>
+              添加卡片
+            </div>
           </div>
+          {!collapsedSections.cards && (
+          <>
           <div style={{ fontSize: 10.5, color: "#5A7360", marginBottom: 12 }}>
             信用卡消费会等到还款日才计入现金流；储蓄/现金卡的支出会立即计入现金流
           </div>
@@ -2188,14 +2258,24 @@ export default function MonthlyLedger() {
               {accountError && <div style={{ color: "#A8382E", fontSize: 12, marginTop: 6 }}>{accountError}</div>}
             </>
           )}
+          </>
+          )}
         </div>
 
         {/* Cash flow planning — unaffected by the card/account list above; still reads the same data */}
         <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "16px 18px" }}>
-          <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, marginBottom: 10, fontWeight: 700 }}>
-            现金流规划
+          <div
+            onClick={() => toggleSection("cashflow")}
+            style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: collapsedSections.cashflow ? 0 : 10, cursor: "pointer" }}
+          >
+            <span style={{ fontSize: 10, color: "#5A7360" }}>{collapsedSections.cashflow ? "▸" : "▾"}</span>
+            <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700 }}>
+              现金流规划
+            </div>
           </div>
 
+          {!collapsedSections.cashflow && (
+          <>
           <div style={{ marginBottom: 12 }}>
             <LabeledInput label="月初起始余额（可选，每月单独）" value={startBalance} onChange={v => updateStartBalance(v)} placeholder="0.00" prefix="$" />
           </div>
@@ -2251,12 +2331,18 @@ export default function MonthlyLedger() {
               填写工资和信用卡信息后，这里会显示现金流时间线
             </div>
           )}
+          </>
+          )}
         </div>
 
         {/* Transfers */}
         <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "16px 18px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
-            <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700 }}>
+          <div
+            onClick={() => toggleSection("transfers")}
+            style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: collapsedSections.transfers ? 0 : 10, cursor: "pointer" }}
+          >
+            <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 10, color: "#5A7360" }}>{collapsedSections.transfers ? "▸" : "▾"}</span>
               转账
             </div>
             <div style={{
@@ -2267,6 +2353,8 @@ export default function MonthlyLedger() {
             </div>
           </div>
 
+          {!collapsedSections.transfers && (
+          <>
           {monthTransfers.length > 0 && (
             <div style={{ marginBottom: 12 }}>
               {monthTransfers.map(t => (
@@ -2416,13 +2504,23 @@ export default function MonthlyLedger() {
             </button>
           </div>
           {transferError && <div style={{ color: "#A8382E", fontSize: 12, marginTop: 6 }}>{transferError}</div>}
+          </>
+          )}
         </div>
 
         {/* Recurring subscriptions / auto-deducted expenses */}
         <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", padding: "16px 18px" }}>
-          <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700, marginBottom: 6 }}>
-            订阅 / 自动扣款
+          <div
+            onClick={() => toggleSection("recurring")}
+            style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: collapsedSections.recurring ? 0 : 6, cursor: "pointer" }}
+          >
+            <span style={{ fontSize: 10, color: "#5A7360" }}>{collapsedSections.recurring ? "▸" : "▾"}</span>
+            <div style={{ fontSize: 12.5, color: "#12241A", letterSpacing: 1, fontWeight: 700 }}>
+              订阅 / 自动扣款
+            </div>
           </div>
+          {!collapsedSections.recurring && (
+          <>
           <div style={{ fontSize: 11, color: "#5A7360", marginBottom: 10 }}>
             添加一次，每月会自动计入支出总额，不用每月手动记账
           </div>
@@ -2619,6 +2717,8 @@ export default function MonthlyLedger() {
             </button>
           </div>
           {recurringError && <div style={{ color: "#A8382E", fontSize: 12 }}>{recurringError}</div>}
+          </>
+          )}
         </div>
         </>
         )}
@@ -2929,6 +3029,15 @@ export default function MonthlyLedger() {
                       >
                         <Pencil size={12} />
                       </button>
+                      {s.amount > 0 && (
+                        <button
+                          onClick={() => markSplitAsTransferred(s.person, s.amount)}
+                          style={{ border: "none", background: "none", color: "#3A8C4A", cursor: "pointer", fontSize: 11, fontWeight: 600, padding: 0 }}
+                          title="对方已经转账还你了，自动记一笔转入"
+                        >
+                          已转账
+                        </button>
+                      )}
                       <button
                         onClick={() => writeOffSplit(s.person, s.amount)}
                         style={{ border: "none", background: "none", color: "#5A7360", cursor: "pointer", fontSize: 11, padding: 0 }}
@@ -3066,6 +3175,20 @@ export default function MonthlyLedger() {
           )}
         </div>
 
+        <div
+          onClick={() => toggleSection("entries")}
+          style={{
+            background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", borderBottom: collapsedSections.entries ? "1px solid #A8C29A" : "none",
+            padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "#12241A", fontWeight: 700, letterSpacing: 1 }}>
+            <span style={{ fontSize: 10, color: "#5A7360" }}>{collapsedSections.entries ? "▸" : "▾"}</span>
+            记录列表 <span style={{ fontWeight: 400, color: "#5A7360" }}>（{filteredMonthEntries.length}笔）</span>
+          </div>
+        </div>
+
+        {!collapsedSections.entries && (
         <div style={{ background: "#FFFFFF", border: "1px solid #A8C29A", borderTop: "none", borderRadius: "4px 4px 20px 20px", overflow: "hidden" }}>
           {filteredMonthEntries.length === 0 ? (
             <div style={{ padding: "30px 18px", textAlign: "center", color: "#5A7360", fontSize: 13 }}>
@@ -3154,9 +3277,10 @@ export default function MonthlyLedger() {
             ))
           )}
         </div>
+        )}
 
         <div style={{ textAlign: "center", fontSize: 11, color: "#5A7360", marginTop: 14 }}>
-          数据仅保存在本设备 · {monthsAvailable.length} 个月记录
+          数据已同步到云端 · {monthsAvailable.length} 个月记录
         </div>
         </>
         )}
