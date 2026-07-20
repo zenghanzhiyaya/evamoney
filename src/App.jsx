@@ -1586,9 +1586,17 @@ export default function MonthlyLedger() {
         }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-thumb { background: #DDC6BC; border-radius: 4px; }
+
+        .app-shell { max-width: 480px; }
+        @media (min-width: 700px) {
+          .app-shell { max-width: 640px; }
+        }
+        @media (min-width: 1000px) {
+          .app-shell { max-width: 760px; }
+        }
       `}</style>
 
-      <div style={{ maxWidth: 480, margin: "0 auto", boxShadow: "0 6px 28px rgba(163,112,112,0.14)", borderRadius: 10 }}>
+      <div className="app-shell" style={{ margin: "0 auto", boxShadow: "0 6px 28px rgba(163,112,112,0.14)", borderRadius: 10 }}>
 
         {/* Header - chiikawa cover */}
         <div style={{
